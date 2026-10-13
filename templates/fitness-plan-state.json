@@ -1,0 +1,3 @@
+{ "operation_id": "<stable-user-plan-state-operation>", "plan_id": "<plan-id>", "plan_path": "<exact saved design path>",
+  "expected_sequence": 0, "status": "accepted", "basis": "user_report", "reason": "<explicit user statement>",
+  "sources": ["<preserved user acceptance/pause/completion report>"] }

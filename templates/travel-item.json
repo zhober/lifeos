@@ -1,0 +1,26 @@
+{
+  "id": null,
+  "label": null,
+  "kind": "activity",
+  "place": null,
+  "track_id": "party",
+  "timing": {
+    "start_at": null,
+    "end_at": null,
+    "start_timezone": null,
+    "end_timezone": null,
+    "window_start_at": null,
+    "window_end_at": null,
+    "blocks_time": null,
+    "basis": "unknown"
+  },
+  "depends_on": [],
+  "buffer_before_min": null,
+  "verification": "unverified",
+  "checked_on": null,
+  "valid_until": null,
+  "source_indexes": [],
+  "cost_status": "unknown",
+  "included_in": null,
+  "price": null
+}

@@ -1,0 +1,4 @@
+{ "operation_id": "<stable-recovery-observation>", "subject": "self", "title": "<reported feedback>", "date": null, "date_basis": "unknown",
+  "evidence": "reported", "review_status": "reviewed", "extraction_confidence": "high", "timing": "after", "session_id": null,
+  "sleep_h": null, "fatigue": null, "soreness": null, "readiness": null, "notes": "<actual report>", "health_refs": [],
+  "case_ids": [], "sources": ["<original feedback>"] }

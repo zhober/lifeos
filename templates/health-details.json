@@ -1,0 +1,11 @@
+{
+  "symptom": { "description": "<reported observation>", "course": "unknown", "location": null, "frequency": null,
+    "severity": null, "triggers": [], "associated": [], "measures": [], "resolved_on": null },
+  "measurement": { "name": "<reported measurement name>", "value": null, "comparator": null, "unit": null,
+    "specimen": null, "method": null, "reference_range": null, "reported_flag": null },
+  "report": { "type": "other", "summary": "<attributed original report wording>", "issuer": null },
+  "visit": { "reason": "<reported visit reason>", "clinician_summary": null, "recommendations": [], "follow_up_on": null },
+  "medication": { "name": "<source medication name>", "statement_type": "unknown", "usage_status": "unknown",
+    "dose": null, "route": null, "frequency": null, "prescribed_on": null, "actual_start": null, "actual_end": null },
+  "diagnosis": { "name": "<attributed clinical statement>", "verification_status": "unknown", "clinician_context": null }
+}

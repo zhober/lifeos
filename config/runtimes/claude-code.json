@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node tools/*)",
+      "Bash(date*)",
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit(journal/**)",
+      "Edit(advice/**)",
+      "Edit(reviews/**)",
+      "Edit(memory/**)",
+      "Edit(inbox/**)",
+      "Edit(records/**)",
+      "Edit(experts/**)",
+      "Edit(evolve/**)"
+    ],
+    "deny": [
+      "Edit(./CLAUDE.md)",
+      "Edit(./.claude/**)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/tools/context.mjs\""
+          }
+        ]
+      }
+    ]
+  }
+}

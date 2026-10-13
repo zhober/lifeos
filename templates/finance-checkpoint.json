@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "kind": "finance_checkpoint",
+  "checkpoint_id": null,
+  "request_id": null,
+  "plan_revision": null,
+  "recorded_at": null,
+  "objective": null,
+  "worksheet_references": [],
+  "original_turn_references": [],
+  "source_references": [],
+  "assumptions": [],
+  "proposal_references": [],
+  "actual_outcome_references": [],
+  "status": "not_started",
+  "pending_input_reference": null,
+  "uncertainties": [],
+  "next_activity": null,
+  "supersedes": null
+}

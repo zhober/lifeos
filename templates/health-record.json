@@ -1,0 +1,18 @@
+{
+  "operation_id": "<stable-health-capture>",
+  "kind": "symptom",
+  "title": "<original observation label>",
+  "subject": "<self, another stable identity, or unknown>",
+  "state": "active",
+  "evidence": "reported",
+  "review_status": "reviewed",
+  "extraction_confidence": "high",
+  "occurred_start": null,
+  "occurred_end": null,
+  "date_precision": "unknown",
+  "details": { "description": "<exact reported observation>", "course": "unknown", "location": null, "frequency": null,
+    "severity": null, "triggers": [], "associated": [], "measures": [], "resolved_on": null },
+  "case_ids": [],
+  "related_record_ids": [],
+  "sources": ["<immutable original statement or report path>"]
+}

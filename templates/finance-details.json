@@ -1,0 +1,15 @@
+{
+  "cashflow": {
+    "currency": null, "scale": null, "from": null, "to": null, "rows": [],
+    "coverage": {"income": "unknown", "expenses": "unknown", "cash_flow": "unknown"},
+    "cash_scope": "consolidated_cash", "opening_minor": null, "closing_minor": null,
+    "aggregate_categories_disjoint": false
+  },
+  "balances": {"currency": null, "scale": null, "as_of": null, "items": [], "coverage": {"assets": "unknown", "liabilities": "unknown"}},
+  "budget": {"currency": null, "scale": null, "from": null, "to": null, "limit_minor": null, "spent_minor": null, "spending_coverage": "unknown", "status": "proposed"},
+  "goal": {"currency": null, "scale": null, "target_minor": null, "current_minor": null, "monthly_contribution_minor": null, "status": "proposed", "as_of": null, "target_on": null},
+  "debt": {"currency": null, "scale": null, "principal_minor": null, "monthly_payment_minor": null, "annual_rate_bps": null, "rate_basis": "nominal_annual_monthly", "upfront_fee_minor": null, "max_months": null},
+  "scenario": {"currency": null, "scale": null, "starting_minor": null, "monthly_income_minor": null, "monthly_expense_minor": null, "one_off_minor": null, "months": null, "assumptions": [], "starting_range_minor": null, "monthly_income_range_minor": null, "monthly_expense_range_minor": null, "one_off_range_minor": null},
+  "cashflow_row": {"flow_id": null, "type": "other", "status": "planned", "scope": "event", "on": null, "from": null, "to": null, "category": null, "amount_minor": null, "cash_effect": null, "source_indexes": []},
+  "balance_item": {"item_id": null, "side": null, "scope": "item", "as_of": null, "amount_minor": null, "source_indexes": []}
+}

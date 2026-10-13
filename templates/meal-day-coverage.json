@@ -1,0 +1,8 @@
+{
+  "operation_id": "<stable-coverage-operation>",
+  "date": "<YYYY-MM-DD>",
+  "complete": false,
+  "no_intake": false,
+  "reason": "<exact coverage statement and its basis; no inference from photo count>",
+  "sources": ["<captured user statement path>"]
+}

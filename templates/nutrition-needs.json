@@ -1,0 +1,11 @@
+{
+  "age_years": null,
+  "height_cm": null,
+  "weight_kg": null,
+  "equation_sex": null,
+  "population": null,
+  "pregnant": null,
+  "lactating": null,
+  "requires_clinical_guidance": null,
+  "activity_factor": null
+}

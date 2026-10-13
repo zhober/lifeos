@@ -1,0 +1,11 @@
+{
+  "operation_id": "<stable-plan-design-operation>", "subject": "self", "title": "<proposed plan>",
+  "evidence": "reported", "review_status": "reviewed", "extraction_confidence": "high",
+  "goal": "<sourced user goal>", "valid_from": "<YYYY-MM-DD>", "valid_to": "<YYYY-MM-DD>", "review_on": null,
+  "constraints": [], "rationale": "<applicability, baseline, uncertainty and intended feedback>",
+  "schedule": [{ "slot_id": "slot-1", "date": "<YYYY-MM-DD>", "title": "<scheduled workout>", "rest": false,
+    "target_duration_min": null,
+    "activities": [{ "id": "activity-1", "name": "<exercise>", "exercise_key": "<variant>", "equipment_key": "<equipment>",
+      "type": "resistance", "target_work_sets": null, "target_reps": null, "reps_basis": "total", "target_external_load": null, "target_rpe": null }] }],
+  "case_ids": [], "sources": ["<original goal and preserved plan proposal>"]
+}

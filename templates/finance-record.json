@@ -1,0 +1,20 @@
+{
+  "operation_id": null,
+  "record_id": null,
+  "supersedes": null,
+  "kind": null,
+  "basis": "personal",
+  "subject": "self",
+  "title": "Financial worksheet",
+  "privacy_scopes": ["finance"],
+  "privacy_fields": [],
+  "evidence": "reported",
+  "review_status": "pending",
+  "extraction_confidence": "unknown",
+  "state": "active",
+  "occurred_start": null,
+  "occurred_end": null,
+  "date_precision": "unknown",
+  "sources": [],
+  "details": null
+}

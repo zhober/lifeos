@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "request_id": "<request-id>",
+  "plan_revision": 1,
+  "trigger": "<panel|user_requested|material_uncertainty|material_conflict|substantial_commitment|safety>",
+  "target": { "path": "tasks/<year>/<request-id>/artifacts/final-v1.md", "sha256": "<sha256>" },
+  "rounds": [
+    {
+      "round": 1,
+      "stage": "final",
+      "mode": "independent",
+      "target": { "path": "tasks/<year>/<request-id>/artifacts/final-v1.md", "sha256": "<sha256>" },
+      "response": { "path": "tasks/<year>/<request-id>/artifacts/critic-round-1.md", "sha256": "<sha256>" },
+      "verdict": "pass",
+      "sources": [{ "path": "tasks/<year>/<request-id>/request.json", "sha256": "<sha256>" }],
+      "findings": [],
+      "resolutions": []
+    }
+  ],
+  "dispositions": [],
+  "disclosures": []
+}

@@ -1,0 +1,13 @@
+{
+  "operation_id": "<stable-independent-total-operation>",
+  "date": "<YYYY-MM-DD>",
+  "state": "active",
+  "complete": false,
+  "reason": "<source-supported scope of these daily totals; set complete only for explicit whole-day coverage>",
+  "nutrients": {
+    "kcal": { "value": null, "unit": "kcal" },
+    "protein": { "value": null, "unit": "g" },
+    "Na": { "value": null, "unit": "mg" }
+  },
+  "sources": ["<retained original export or immutable user statement path>"]
+}

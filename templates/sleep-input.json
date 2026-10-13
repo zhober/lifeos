@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "kind": "sleep_input",
+  "episode_type": "unknown",
+  "subject": "self",
+  "wake_date": null,
+  "timezone": null,
+  "sleep_h": null,
+  "sleep_quality": null,
+  "bed_time": null,
+  "wake_time": null,
+  "notes": null,
+  "original_sources": []
+}

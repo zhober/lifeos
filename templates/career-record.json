@@ -1,0 +1,19 @@
+{
+  "operation_id": null,
+  "record_id": null,
+  "supersedes": null,
+  "kind": null,
+  "title": null,
+  "subject": null,
+  "occurred_start": null,
+  "occurred_end": null,
+  "occurred_at": null,
+  "date_precision": "unknown",
+  "evidence": "reported",
+  "review_status": "pending",
+  "extraction_confidence": "unknown",
+  "state": "active",
+  "sources": [],
+  "related_record_ids": [],
+  "details": {}
+}

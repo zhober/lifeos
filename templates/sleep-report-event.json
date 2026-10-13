@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "kind": "sleep_report_event",
+  "basis": "personal",
+  "wake_date": null,
+  "sleep_input": {
+    "path": null,
+    "sha256": null,
+    "scopes": ["health"],
+    "fields": ["sleep_h", "sleep_quality", "bed_time", "wake_time", "sleep_notes", "dates"],
+    "mixed": false,
+    "precision": "detailed"
+  },
+  "analysis": {
+    "path": null,
+    "sha256": null,
+    "scopes": ["health"],
+    "fields": ["sleep_analysis", "dates"],
+    "mixed": false,
+    "precision": "summary"
+  }
+}

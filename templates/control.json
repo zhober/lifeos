@@ -1,0 +1,8 @@
+{
+  "operation_id": "<request-id>/pause-01",
+  "request_id": "<request-id>",
+  "action": "pause",
+  "reason": "<recorded user instruction>",
+  "basis": "user_request",
+  "sources": [{ "path": "<captured user message>" }]
+}

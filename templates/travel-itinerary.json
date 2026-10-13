@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "kind": "travel_itinerary",
+  "plan_id": null,
+  "trip_id": null,
+  "version": 1,
+  "supersedes": null,
+  "recorded_at": null,
+  "subject": "self",
+  "basis": "personal",
+  "objective": null,
+  "from": null,
+  "to": null,
+  "origin_area": null,
+  "destinations": [],
+  "assumptions": [],
+  "constraints": [],
+  "source_references": [],
+  "cost_coverage": "unknown",
+  "items": [],
+  "alternatives": []
+}

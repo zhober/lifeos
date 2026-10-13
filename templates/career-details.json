@@ -1,0 +1,21 @@
+{
+  "project": {
+    "objective": null,
+    "constraints": [],
+    "review_on": null,
+    "milestones": [{ "id": null, "title": null, "acceptance_criteria": null, "due_on": null, "depends_on": [], "planned_duration": null }]
+  },
+  "project_state": { "project_ref": null, "status": null, "reason": null },
+  "work_session": {
+    "activity": null, "activity_type": "unknown", "project_ref": null, "milestone_id": null,
+    "duration": { "value": null, "unit": null, "basis": "unspecified", "quality": "reported" }
+  },
+  "milestone": { "project_ref": null, "milestone_id": null, "status": "unknown", "description": null, "blocker": null, "accepted_by": null },
+  "evidence": { "type": null, "description": null, "author": null, "project_ref": null, "milestone_id": null, "skills": [], "metrics": [] },
+  "opportunity": {
+    "type": null, "description": null, "organization": null, "region": null, "source_url": null,
+    "checked_on": null, "deadline_on": null, "compensation_text": null,
+    "requirements": [{ "id": null, "text": null, "category": "uncertain", "skills": [] }]
+  },
+  "career_event": { "process_id": null, "mode": null, "statement_type": "observation", "stage": "unknown", "description": null, "opportunity_ref": null }
+}

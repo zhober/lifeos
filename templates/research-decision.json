@@ -1,0 +1,12 @@
+{
+  "mode": "deep",
+  "escalation_trigger": "<hard_question, material_source_conflict, or explicit_user_depth>",
+  "unresolved_question": "<the specific decision-relevant gap>",
+  "why_lightweight_is_insufficient": "<concrete reason or explicit requested depth>",
+  "existing_evidence_refs": [],
+  "material_conflicts": [],
+  "research_scope": "<bounded question/population/outcome or technical scope>",
+  "stop_condition": "<what evidence or deliverable is sufficient>",
+  "remaining_limits": [],
+  "note": "<retain inside the existing request or iteration artifact; simple lookups need no separate form>"
+}

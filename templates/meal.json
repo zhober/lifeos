@@ -1,0 +1,27 @@
+{
+  "operation_id": "<stable-capture-operation>",
+  "date": "<YYYY-MM-DD>",
+  "meal_name": "<meal label in the interaction language>",
+  "input_method": "photo",
+  "image_review": "viewed",
+  "observation": "<visible foods and layout, separate from inferred ingredients>",
+  "photos": [{ "path": "<retained inbox/meal-photos/... path>", "sha256": "<sha256>", "stage": "before" }],
+  "assumptions": ["<meal date/scale/consumption assumptions where needed>"],
+  "components": [{
+    "id": "component-1",
+    "name": "<food or ingredient>",
+    "food_key": "<verified exact food code or name; null if unresolved>",
+    "cooking_state": "<raw/cooked/label state and edible-portion basis>",
+    "basis_match": "assumed",
+    "visibility": "visible",
+    "portion_method": "photo_estimate",
+    "grams": { "low": 80, "estimate": 100, "high": 140 },
+    "consumed_fraction": { "low": 1, "estimate": 1, "high": 1 },
+    "consumption_basis": "assumed",
+    "confidence": { "identity": "medium", "portion": "low", "recipe": "unknown" },
+    "structural_zeros": {},
+    "assumptions": ["<explain the selected reference, size range, and hidden ingredients>"],
+    "sources": ["<retained photo or captured user statement path>"]
+  }],
+  "sources": ["<original request or source statement path>"]
+}

@@ -1,0 +1,12 @@
+{
+  "cost_id": null,
+  "currency": null,
+  "scale": null,
+  "amount_minor": null,
+  "quantity": null,
+  "unit": null,
+  "mandatory_charges_complete": null,
+  "eligibility": "unknown",
+  "checked_on": null,
+  "valid_until": null
+}

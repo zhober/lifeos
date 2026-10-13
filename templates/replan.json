@@ -1,0 +1,11 @@
+{
+  "operation_id": "<request-id>/plan-change-01",
+  "request_id": "<request-id>",
+  "expected_revision": 1,
+  "reason": "<scope or evidence change>",
+  "basis": "user_request",
+  "sources": [{ "path": "<captured instruction or new evidence>" }],
+  "steps": [{ "id": "capture-records", "effect": "write", "required": true, "waivable": false, "depends_on": [] }],
+  "reuse_steps": [],
+  "invalidate_steps": []
+}

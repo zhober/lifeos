@@ -1,0 +1,21 @@
+{
+  "operation_id": "<request-id>/memory-01",
+  "kind": "event",
+  "domain": "general",
+  "text": "<sourced statement>",
+  "evidence": "reported",
+  "sources": [{ "path": "<existing vault-relative source>" }],
+  "occurred_start": null,
+  "occurred_end": null,
+  "date_precision": "unknown",
+  "temporal_class": "episode",
+  "valid_from": null,
+  "valid_to": null,
+  "state": "unknown",
+  "tags": [],
+  "aliases": [],
+  "entities": [],
+  "fact_key": null,
+  "supersedes": [],
+  "related_to": []
+}

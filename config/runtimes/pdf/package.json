@@ -1,0 +1,9 @@
+{
+  "name": "lifeos-pdf-runtime",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "pdfkit": "0.20.2"
+  }
+}

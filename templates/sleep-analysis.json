@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "kind": "sleep_analysis",
+  "analysis_method": "descriptive_script",
+  "subject": "self",
+  "wake_date": null,
+  "timezone": null,
+  "status": "pending",
+  "input_sources": [],
+  "observations": [],
+  "limitations": []
+}

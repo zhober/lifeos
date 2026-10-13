@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "claim": "<exact claim being cross-checked>",
+  "question_context": { "population_or_subject": null, "intervention_or_exposure": null, "comparator": null, "outcome": null, "setting": null },
+  "source_appraisal_refs": [],
+  "original_evidence_units": [
+    { "unit_id": "<original study or evidence identifier>", "source_refs": [], "study_registration_ids": [], "cohort_ids": [],
+      "claim_relation": "unclear", "independence": "unknown", "independence_reason": null, "quality_limitations": [], "applicability": "unknown" }
+  ],
+  "overlap_groups": [],
+  "supporting_evidence_units": [],
+  "contrary_evidence_units": [],
+  "null_or_inconclusive_evidence_units": [],
+  "concordance": "unknown",
+  "material_differences": [],
+  "shared_bias_or_limitations": [],
+  "claim_certainty_before": { "level": "unknown", "basis": "provisional_appraisal" },
+  "claim_certainty_after": { "level": "unknown", "basis": "provisional_appraisal" },
+  "change_direction": "not_assessed",
+  "change_reason": null,
+  "remaining_gaps": [],
+  "accessed_on": "<YYYY-MM-DD>",
+  "assessment_note": "<qualitative provisional synthesis; no numeric confidence or formal GRADE claim>"
+}

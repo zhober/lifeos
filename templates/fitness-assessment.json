@@ -1,0 +1,4 @@
+{ "operation_id": "<stable-performance-observation>", "subject": "self", "title": "<observed test>", "date": null, "date_basis": "unknown",
+  "evidence": "measured", "review_status": "reviewed", "extraction_confidence": "high", "metric_key": "<specific metric>",
+  "protocol_key": "<actual test protocol>", "equipment_key": "<actual equipment>", "value": null,
+  "conditions": null, "session_id": null, "case_ids": [], "sources": ["<original measurement>"] }

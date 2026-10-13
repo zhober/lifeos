@@ -1,0 +1,21 @@
+{
+  "operation_id": "<stable-actual-session-operation>",
+  "subject": "self",
+  "title": "<reported workout>",
+  "date": null,
+  "date_basis": "unknown",
+  "evidence": "reported",
+  "review_status": "reviewed",
+  "extraction_confidence": "high",
+  "completion": "unknown",
+  "recording_complete": false,
+  "duration_min": null,
+  "session_rpe": null,
+  "activities": [{ "id": "activity-1", "name": "<reported exercise>", "exercise_key": "<stable variant>",
+    "equipment_key": "<actual equipment or none>", "type": "resistance", "duration_min": null, "sets_complete": false,
+    "sets": [{ "id": "set-1", "kind": "unknown", "completion": "unknown", "reps": null, "reps_basis": "total",
+      "external_load": null, "rpe": null, "rir": null }] }],
+  "plan_link": null,
+  "case_ids": [],
+  "sources": ["<immutable exact report/export source>"]
+}

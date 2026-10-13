@@ -1,0 +1,13 @@
+{
+  "goal": "<user goal and linked source>",
+  "status": "proposed",
+  "applicability": "<population and relevant constraints, with evidence>",
+  "valid_from": null,
+  "valid_to": null,
+  "review_on": null,
+  "energy_needs_artifact": null,
+  "targets": {},
+  "reference_sources": [],
+  "personal_sources": [],
+  "rationale": "<data coverage, chosen ranges/units, assumptions, and intended follow-up>"
+}

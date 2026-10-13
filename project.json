@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "name": "LifeOS",
+  "prompt_language": "en",
+  "language": "en",
+  "interaction": {
+    "preferences_file": "profile/preferences.json",
+    "confirm_language_on_setup": true
+  },
+  "timezone": null,
+  "review": {
+    "max_final_rounds": 3
+  },
+  "research": {
+    "default_mode": "lightweight",
+    "require_deep_reason": true
+  },
+  "health": {
+    "original_max_bytes": 104857600
+  },
+  "fitness": {
+    "original_max_bytes": 104857600
+  },
+  "career": {
+    "original_max_bytes": 104857600
+  },
+  "finance": {
+    "original_max_bytes": 104857600,
+    "mode": "analysis_and_advice_only"
+  },
+  "travel": {
+    "mode": "research_and_advice_only",
+    "login_handled_by": "user"
+  },
+  "reporting": {
+    "default_style": "data_actions",
+    "cover_card_limit": 4,
+    "cover_domain_priority": ["nutrition", "health", "fitness", "career", "study", "psych", "finance", "shopping", "travel"],
+    "trigger": "after_sleep_analysis",
+    "sleep_date_basis": "wake_date",
+    "archive_directory": "reports/daily",
+    "pdf_runtime_manifest": "config/runtimes/pdf/package.json",
+    "domains": ["career", "study", "nutrition", "fitness", "health", "finance", "shopping", "psych", "travel"]
+  },
+  "shopping": {
+    "mode": "research_and_advice_only",
+    "login_handled_by": "user",
+    "original_max_bytes": 104857600,
+    "marketplaces": [],
+    "experience_channels": []
+  },
+  "collaboration": {
+    "max_question_rounds": 3
+  },
+  "nutrition": {
+    "photo_max_bytes": 52428800,
+    "review_days": 14,
+    "input_sanity_bounds": {
+      "age_years": [0, 125],
+      "height_cm": [50, 260],
+      "weight_kg": [10, 500]
+    }
+  },
+  "entrypoints": {
+    "agent": "AGENTS.md",
+    "handbook": "docs/core/HANDBOOK.md",
+    "human": "README.md",
+    "human_zh": "README.zh-CN.md",
+    "architecture": "docs/core/ARCHITECTURE.md",
+    "rules": "docs/core/RULES.md",
+    "orchestrator": "docs/core/ORCHESTRATOR.md",
+    "control": "docs/core/CONTROL.md",
+    "memory": "docs/core/MEMORY.md",
+    "portability": "docs/core/PORTABILITY.md",
+    "configuration": "config/CONFIGURATION.md",
+    "bootstrap": "config/BOOTSTRAP.md",
+    "review": "docs/core/REVIEW.md",
+    "nutrition": "docs/domains/NUTRITION.md",
+    "health": "docs/domains/HEALTH.md",
+    "collaboration": "docs/core/COLLABORATION.md",
+    "research": "docs/core/RESEARCH.md",
+    "quick_log": "workflows/log/QUICK.md",
+    "quick_ask": "workflows/ask/QUICK.md",
+    "fitness": "docs/domains/FITNESS.md",
+    "study": "docs/domains/STUDY.md",
+    "career": "docs/domains/CAREER.md",
+    "shopping": "docs/domains/SHOPPING.md",
+    "psych": "docs/domains/PSYCH.md",
+    "finance": "docs/domains/FINANCE.md",
+    "travel": "docs/domains/TRAVEL.md",
+    "reporting": "docs/domains/REPORTING.md"
+  },
+  "definitions": {
+    "agents_directory": "agents",
+    "workflows_directory": "workflows",
+    "disabled_agents_directory": "agents-disabled",
+    "workflow_filename": "SKILL.md",
+    "expert_common_rules": "experts/_common.md",
+    "role_aliases": {
+      "ai-tutor": "study-coach"
+    }
+  },
+  "configuration": {
+    "runtimes_directory": "config/runtimes",
+    "forbidden_root_entries": [".claude", "CLAUDE.md", ".codex", ".gemini", "GEMINI.md", ".cursor"]
+  },
+  "data_directories": {
+    "profile": "profile",
+    "journal": "journal",
+    "records": "records",
+    "inbox": "inbox",
+    "advice": "advice",
+    "reviews": "reviews",
+    "memory": "memory",
+    "expert_knowledge": "experts",
+    "reference_data": "data",
+    "tasks": "tasks",
+    "actions": "actions",
+    "write_history": "history",
+    "reports": "reports"
+  },
+  "evolution_directory": "evolve",
+  "tools_directory": "tools",
+  "templates_directory": "templates"
+}

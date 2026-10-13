@@ -1,0 +1,9 @@
+{
+  "operation_id": "<stable-case-creation>",
+  "title": "<shared question in the interaction language>",
+  "subject": "<stable identity or topic subject>",
+  "domains": ["<domain>"],
+  "lead": "<enabled domain expert>",
+  "participants": ["<enabled domain expert>"],
+  "sources": ["<original request or other case-creation evidence>"]
+}

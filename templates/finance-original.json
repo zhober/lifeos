@@ -1,0 +1,6 @@
+{
+  "source_path": null,
+  "date": null,
+  "privacy_scopes": ["finance"],
+  "privacy_fields": ["raw_statements", "account_details", "income", "expenses", "assets", "debts"]
+}

@@ -1,0 +1,30 @@
+{
+  "product": {
+    "name": null, "identity_status": "unknown", "identity_basis": null,
+    "identity": { "brand": null, "model": null, "variant": null, "pack": null, "region": null, "product_code": null },
+    "condition": "unknown", "specifications": []
+  },
+  "offer": {
+    "product_ref": null, "platform": null, "merchant": null, "seller_type": null, "seller_sku": null, "source_url": null,
+    "quote_type": "observed_page", "availability": "unknown", "payment_basis": "unknown", "quantity_units": 1,
+    "purchase_eligibility": "unknown", "eligibility_context": null, "warranty_or_service": null,
+    "price": { "currency": null, "scale": null, "listed_minor": null, "shipping_minor": null, "tax_minor": null, "other_fee_minor": null },
+    "discounts": [], "stacking": "unknown", "rebates_or_extras": [], "valid_until": null, "expires_at": null
+  },
+  "quality": {
+    "product_ref": null, "claim_key": null, "claim": null, "direction": "uncertain", "applicability": "uncertain",
+    "source_type": "owner_report", "channel": null, "title": null, "author": null, "source_url": null,
+    "read_scope": "unread", "location": null, "published_on": null, "checked_on": null, "usage_duration": null,
+    "method": null, "sample_size": null, "sponsorship": "unknown", "evidence_unit_key": null,
+    "conditions": [], "limitations": []
+  },
+  "ownership": {
+    "product_ref": null, "ownership_id": null, "statement_type": "observation", "status": "unknown", "description": null,
+    "money": null, "money_role": null, "cash_flow_id": null, "related_instance": null
+  },
+  "watch": {
+    "product_ref": null, "status": "proposed", "reason": null,
+    "target": { "amount_minor": null, "currency": null, "scale": null }, "quantity_units": 1,
+    "platforms": [], "next_check_on": null
+  }
+}

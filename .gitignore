@@ -1,0 +1,11 @@
+# Copyrighted reference data: build locally for personal use (see data/food/README.md)
+/data/food/cn-fct6.json
+/data/food/gi.json
+# Local research, third-party source snapshots and drafts
+/evolve/research/
+/evolve/sources/
+/evolve/drafts/
+# Local runtime state
+.lifeos/
+.lifeos-deploy.json
+node_modules/

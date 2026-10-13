@@ -1,0 +1,8 @@
+{
+  "operation_id": "<stable runtime message identifier>",
+  "original_input": "<verbatim user request>",
+  "attachments": [],
+  "date": null,
+  "intents": [],
+  "steps": [{ "id": "capture-records", "effect": "write", "required": true, "waivable": false, "depends_on": [] }]
+}

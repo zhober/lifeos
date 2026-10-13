@@ -1,0 +1,21 @@
+{
+  "evidence": { "operation_id": "<stable-operation>", "case_id": "<case-id>", "expected_revision": 1,
+    "reason": "<relevance and uncertainty>", "sources": ["<authoritative original record path>"] },
+  "question": { "operation_id": "<stable-operation>", "case_id": "<case-id>", "expected_revision": 1,
+    "from_expert": "main-assistant", "to_expert": "<participant>", "question": "<specific question>", "sources": [] },
+  "response": { "operation_id": "<stable-operation>", "case_id": "<case-id>", "question_id": "<question-id>",
+    "question_sha256": "<exact question file hash>", "context_revision": 1, "expert": "<recipient>",
+    "outcome": "needs_input", "response": "<verbatim expert response>", "sources": ["<durable evidence or response artifact>"] },
+  "claim": { "operation_id": "<stable-operation>", "case_id": "<case-id>", "expected_revision": 1,
+    "expert": "<participant>", "kind": "hypothesis", "topic_key": "<stable question topic>", "status": "proposed",
+    "text": "<explicitly inferred assessment>", "sources": ["<supporting source>"], "contrary_sources": [] },
+  "followup": { "operation_id": "<stable-operation>", "case_id": "<case-id>", "expected_revision": 1,
+    "owner": "<participant>", "text": "<question or monitoring item>", "status": "planned", "due_on": null,
+    "sources": ["<documented basis>"] },
+  "state": { "operation_id": "<stable-operation>", "case_id": "<case-id>", "expected_revision": 1,
+    "state": "monitoring", "reason": "<sourced coordination transition>", "sources": ["<basis>"] },
+  "bind": { "operation_id": "<stable-operation>", "case_id": "<case-id>", "expected_revision": 1,
+    "request_id": "<active linked follow-up/replacement request>", "reason": "<new execution authorization>", "sources": ["<basis>"] },
+  "participants": { "operation_id": "<stable-operation>", "case_id": "<case-id>", "expected_revision": 1,
+    "lead": "<enabled lead>", "participants": ["<enabled domain role>"], "reason": "<scope and assignment change>", "sources": ["<basis>"] }
+}
