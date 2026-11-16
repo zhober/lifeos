@@ -71,7 +71,8 @@ export async function collectDailyReport(date = today(), options = {}) {
     const invalid = numeric(value) != null && (unit === '1–5' ? value < 1 || value > 5 : value < 0);
     if (invalid) { input.gaps.push({ code: 'metric_unit_or_scale_unconfirmed', domain }); value = null; }
     input.metrics.push({ id, domain, label: chinese ? labelZh : labelEn, unit, value: numeric(value), range: invalid ? null : options.range ?? null,
-      coverage: invalid ? 'unknown' : options.coverage ?? 'unconfirmed', evidence: options.evidence ?? 'reported', source_ids: invalid ? [] : options.source_ids ?? (journalSource && value != null ? [journalSource] : []) });
+      coverage: invalid ? 'unknown' : options.coverage ?? 'unconfirmed', evidence: options.evidence ?? 'reported', source_ids: invalid ? [] : options.source_ids ?? (journalSource && value != null ? [journalSource] : []),
+      ...(options.missing_items > 0 && !invalid ? { missing_items: options.missing_items } : {}) });
   };
   metric('work_h', 'career', '工作记录时长', 'Recorded work', 'h', doc.data.work_h, { evidence: 'legacy_unverified' });
   const studyRows = sectionTable(doc.body, '学习');
@@ -93,7 +94,8 @@ export async function collectDailyReport(date = today(), options = {}) {
   for (const [key, labels] of Object.entries(nutritionLabels)) {
     const full = nutrition.complete_day_eligible[key], conflict = nutrition.nutrient_quality[key] === 'conflict', value = conflict ? null : full ? nutrition.total[key] : nutrition.known_subtotal[key];
     metric(key.toLowerCase(), 'nutrition', ...labels, value, { range: conflict ? null : full ? nutrition.ranges[key] : nutrition.known_ranges[key], coverage: conflict ? 'unknown' : full ? 'complete' : value == null ? 'unknown' : 'partial',
-      evidence: nutrition.nutrient_quality[key]?.includes('unverified') ? 'legacy_unverified' : 'estimated', source_ids: value == null ? [] : nutritionRefs });
+      evidence: nutrition.nutrient_quality[key]?.includes('unverified') ? 'legacy_unverified' : 'estimated', source_ids: value == null ? [] : nutritionRefs,
+      missing_items: value == null || conflict ? 0 : nutrition.coverage?.[key]?.missing_items ?? 0 });
   }
   if (nutrition.conflicts.length) input.gaps.push({ code: 'nutrition_conflict', domain: 'nutrition' });
   if (nutrition.intake_day_status !== 'confirmed_complete') input.gaps.push({ code: 'nutrition_day_not_confirmed_complete', domain: 'nutrition' });

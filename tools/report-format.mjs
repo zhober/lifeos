@@ -1,7 +1,7 @@
 // User-facing report labels and offline text/HTML views. No remote content is loaded.
 import { readJSON } from './store.mjs';
 // The recipe covers every view, including text-only archives, so presentation changes create a new bundle.
-export const REPORT_LAYOUT_VERSION = 13;
+export const REPORT_LAYOUT_VERSION = 14;
 export function reportPresentationRecipe() {
   const config = readJSON('project.json').reporting;
   const priority = config.cover_domain_priority ?? ['nutrition', 'health', 'fitness', 'career', 'study', 'psych', 'finance', 'shopping', 'travel'];
@@ -14,7 +14,17 @@ export function reportPresentationRecipe() {
 // Human views show one number per metric: no estimate ranges, no estimate/coverage labels (those stay in report.json), whole-number kcal/g/mg.
 const DISPLAY_ROUND_UNITS = new Set(['kcal', 'g', 'mg']);
 const DISPLAY_DROP_COLUMNS = new Set(['食物', '克数', '来源', 'Food', 'Grams', 'Source']);
-const MEAL_ORDER = ['早餐', '上午加餐', '午餐', '下午加餐', '晚餐', '夜宵', '加餐'];
+const MEAL_ORDER = [['早餐', 'breakfast'], ['上午加餐', 'morning snack'], ['午餐', 'lunch'], ['下午加餐', 'afternoon snack'], ['晚餐', 'dinner'], ['夜宵', 'late-night snack'], ['加餐', 'snack']];
+const mealRank = cell => { const key = String(cell).toLowerCase(), n = MEAL_ORDER.findIndex(names => names.includes(key)); return n < 0 ? MEAL_ORDER.length : n; };
+// Collected meal tables use Chinese column names; English views translate the header row only.
+const TABLE_HEADERS_EN = { '时间': 'Time', '餐次': 'Meal', '蛋白g': 'Protein g', '脂肪g': 'Fat g', '碳水g': 'Carb g' };
+const MEAL_HEADERS = { meal: ['餐次', 'Meal'], p: ['蛋白g', 'Protein g'], f: ['脂肪g', 'Fat g'], c: ['碳水g', 'Carb g'] };
+const englishHeaders = text => {
+  const rows = String(text).split('\n');
+  if (!rows[0]?.trim().startsWith('|')) return text;
+  rows[0] = rows[0].split('|').map(cell => TABLE_HEADERS_EN[cell.trim()] ? ' ' + TABLE_HEADERS_EN[cell.trim()] + ' ' : cell).join('|');
+  return rows.join('\n');
+};
 const simpleMetric = metric => ({ ...metric, label: String(metric.label).replace(/记录$/, ''), range: null, evidence: metric.evidence === 'estimated' ? null : metric.evidence, coverage: null,
   value: typeof metric.value === 'number' && DISPLAY_ROUND_UNITS.has(metric.unit) ? Math.round(metric.value) : metric.value });
 // Meal tables keep time/meal/numbers only; food descriptions, grams and source links are dropped from the human views.
@@ -26,7 +36,7 @@ function simpleText(text) {
   const keep = cells[0].map((header, i) => DISPLAY_DROP_COLUMNS.has(header) || body.every(row => !row[i]) ? -1 : i).filter(i => i >= 0);
   if (keep.length === cells[0].length || !keep.length || cells.some(row => row.length !== cells[0].length)) return text;
   const round = cell => /^-?\d+\.\d+$/.test(cell) ? String(Math.round(Number(cell))) : cell;
-  const mealColumn = cells[0].indexOf('餐次'), order = cell => { const n = MEAL_ORDER.indexOf(cell); return n < 0 ? MEAL_ORDER.length : n; };
+  const mealColumn = cells[0].indexOf('餐次'), order = mealRank;
   const rowsOut = mealColumn < 0 ? body : [...body].sort((a, b) => order(a[mealColumn]) - order(b[mealColumn]));
   const line = row => '| ' + row.join(' | ') + ' |';
   return [line(keep.map(i => cells[0][i])), line(keep.map(() => '---')), ...rowsOut.map(row => line(keep.map(i => round(row[i]))))].join('\n');
@@ -34,33 +44,46 @@ function simpleText(text) {
 // Compare the day's recorded totals with the user's own targets (report.targets). Rule-based; nothing beyond the numbers is inferred.
 // Totals are recorded values, so an excess is certain while a shortfall only reads 'recorded so far'; calories are never flagged as low.
 const ADVICE_RULES = [
-  { key: 'energy_kcal', id: 'kcal', name: '热量', unit: 'kcal', over: (v, g) => '热量 ' + Math.round(v) + ' kcal，比目标上限多 ' + Math.round(v - g.high) + ' kcal。先减油炒、煎炸的菜，主食保持不变。', under: null },
-  { key: 'protein_g', id: 'protein', name: '蛋白质', unit: 'g', over: (v, g) => '蛋白质 ' + Math.round(v) + ' g，已超过目标上限 ' + g.high + ' g，多出的部分可以换成蔬菜或主食。', under: (v, g) => '蛋白质 ' + Math.round(v) + ' g，离目标下限还差 ' + Math.round(g.low - v) + ' g。每餐加一份肉、蛋或豆制品。' },
-  { key: 'fat_g', id: 'fat', name: '脂肪', unit: 'g', over: (v, g) => '脂肪 ' + Math.round(v) + ' g，比目标上限多 ' + Math.round(v - g.high) + ' g。少一道油炒或煎炸的菜，换成清蒸、水煮或卤的。', under: null },
-  { key: 'carb_g', id: 'carb', name: '碳水', unit: 'g', over: (v, g) => '碳水 ' + Math.round(v) + ' g，高于目标上限 ' + g.high + ' g。主食收到目标范围内。', under: (v, g) => '碳水 ' + Math.round(v) + ' g，低于目标下限 ' + g.low + ' g。训练日主食别减，练前练后各吃一份。' },
-  { key: 'fiber_g', id: 'fiber', name: '膳食纤维', unit: 'g', over: null, under: (v, g) => '膳食纤维 ' + Math.round(v) + ' g，离 ' + g.low + ' g 还差 ' + Math.round(g.low - v) + ' g。每餐加一份深色蔬菜，主食换一部分杂粮。' },
-  { key: 'sodium_mg', id: 'na', name: '钠', unit: 'mg', over: (v, g) => '钠 ' + Math.round(v) + ' mg，高于 ' + g.high + ' mg。少喝汤，卤汁和酱汁少蘸。', under: null },
-  { key: 'sleep_h', id: 'sleep_h', name: '睡眠', unit: '小时', over: null, under: (v, g) => '睡眠 ' + v + ' 小时，低于 ' + g.low + ' 小时。想办法提前半小时睡。' }
+  { key: 'energy_kcal', id: 'kcal', unit: 'kcal', name: { zh: '热量', en: 'Energy' },
+    over: { zh: (v, g) => '热量 ' + v + ' kcal，比目标上限多 ' + Math.round(v - g.high) + ' kcal。先减油炒、煎炸的菜，主食保持不变。', en: (v, g) => 'Energy ' + v + ' kcal, ' + Math.round(v - g.high) + ' kcal above your upper target. Cut fried or oily dishes first; keep the staple food.' } },
+  { key: 'protein_g', id: 'protein', unit: 'g', name: { zh: '蛋白质', en: 'Protein' },
+    over: { zh: (v, g) => '蛋白质 ' + v + ' g，已超过目标上限 ' + g.high + ' g，多出的部分可以换成蔬菜或主食。', en: (v, g) => 'Protein ' + v + ' g, above your upper target of ' + g.high + ' g. Swap the extra for vegetables or staples.' },
+    under: { zh: (v, g) => '蛋白质 ' + v + ' g，离目标下限还差 ' + Math.round(g.low - v) + ' g。每餐加一份肉、蛋或豆制品。', en: (v, g) => 'Protein ' + v + ' g, ' + Math.round(g.low - v) + ' g short of your target. Add a portion of meat, eggs or soy to each meal.' } },
+  { key: 'fat_g', id: 'fat', unit: 'g', name: { zh: '脂肪', en: 'Fat' },
+    over: { zh: (v, g) => '脂肪 ' + v + ' g，比目标上限多 ' + Math.round(v - g.high) + ' g。少一道油炒或煎炸的菜，换成清蒸、水煮或卤的。', en: (v, g) => 'Fat ' + v + ' g, ' + Math.round(v - g.high) + ' g above your upper target. Replace one fried dish with a steamed, boiled or braised one.' } },
+  { key: 'carb_g', id: 'carb', unit: 'g', name: { zh: '碳水', en: 'Carbs' },
+    over: { zh: (v, g) => '碳水 ' + v + ' g，高于目标上限 ' + g.high + ' g。主食收到目标范围内。', en: (v, g) => 'Carbs ' + v + ' g, above your upper target of ' + g.high + ' g. Bring staples back into range.' },
+    under: { zh: (v, g) => '碳水 ' + v + ' g，低于目标下限 ' + g.low + ' g。训练日主食别减，练前练后各吃一份。', en: (v, g) => 'Carbs ' + v + ' g, below your target of ' + g.low + ' g. Keep staples on training days: one portion before and one after.' } },
+  { key: 'fiber_g', id: 'fiber', unit: 'g', name: { zh: '膳食纤维', en: 'Fiber' },
+    under: { zh: (v, g) => '膳食纤维 ' + v + ' g，离 ' + g.low + ' g 还差 ' + Math.round(g.low - v) + ' g。每餐加一份深色蔬菜，主食换一部分杂粮。', en: (v, g) => 'Fiber ' + v + ' g, ' + Math.round(g.low - v) + ' g short of ' + g.low + ' g. Add dark leafy vegetables to each meal and swap some staples for whole grains.' } },
+  { key: 'sodium_mg', id: 'na', unit: 'mg', name: { zh: '钠', en: 'Sodium' },
+    over: { zh: (v, g) => '钠 ' + v + ' mg，高于 ' + g.high + ' mg。少喝汤，卤汁和酱汁少蘸。', en: (v, g) => 'Sodium ' + v + ' mg, above ' + g.high + ' mg. Drink less soup and go easy on sauces.' } },
+  { key: 'sleep_h', id: 'sleep_h', unit: 'h', name: { zh: '睡眠', en: 'Sleep' },
+    under: { zh: (v, g) => '睡眠 ' + v + ' 小时，低于 ' + g.low + ' 小时。想办法提前半小时睡。', en: (v, g) => 'Sleep ' + v + ' h, below ' + g.low + ' h. Try going to bed half an hour earlier.' } }
 ];
+// A total that misses some items' values (missing_items > 0) is only a lower bound: it may show an excess, never a shortfall.
 export function dayAdvice(report) {
-  const flags = [], ok = [], targets = report.targets;
+  const flags = [], ok = [], targets = report.targets, lang = String(report.language ?? 'en').startsWith('zh') ? 'zh' : 'en';
   if (!targets) return { flags, ok };
   for (const rule of ADVICE_RULES) {
-    const goal = targets[rule.key], metric = report.metrics.find(item => item.id === rule.id), v = metric?.value;
-    if (!goal || v == null) continue;
-    if (goal.high != null && v > goal.high) { if (rule.over) flags.push({ tag: '偏高', metric: rule.id, text: rule.over(v, goal) }); continue; }
-    if (goal.low != null && v < goal.low) { if (rule.under) flags.push({ tag: '偏低', metric: rule.id, text: rule.under(v, goal) }); continue; }
-    ok.push({ metric: rule.id, text: rule.name + ' ' + (rule.unit === 'kcal' || rule.unit === 'mg' || rule.unit === 'g' ? Math.round(v) : v) + (rule.unit === '小时' ? ' 小时' : ' ' + rule.unit) });
+    const goal = targets[rule.key], metric = report.metrics.find(item => item.id === rule.id), raw = metric?.value;
+    if (!goal || raw == null) continue;
+    const v = rule.unit === 'h' ? raw : Math.round(raw), lowerBound = metric.missing_items > 0;
+    if (goal.high != null && raw > goal.high) { if (rule.over) flags.push({ level: 'high', metric: rule.id, text: rule.over[lang](v, goal) }); continue; }
+    if (goal.low != null && raw < goal.low) { if (rule.under && !lowerBound) flags.push({ level: 'low', metric: rule.id, text: rule.under[lang](v, goal) }); continue; }
+    ok.push({ metric: rule.id, text: rule.name[lang] + ' ' + v + ' ' + (rule.unit === 'h' && lang === 'zh' ? '小时' : rule.unit) });
   }
   return { flags, ok };
 }
 export function reportForDisplay(report) {
+  const l = labels(report.language ?? 'en'), english = !String(report.language ?? 'en').startsWith('zh');
   // The latest parseable sleep paragraph wins: after a morning sleep event that is last night's device detail.
   const sleepItem = report.sections.filter(section => section.domain === 'health').flatMap(section => section.items).map(item => parseSleep(item.text)).filter(Boolean).pop() ?? null;
   return { ...report, advice: dayAdvice(report), sleep_detail: sleepItem, metrics: report.metrics.filter(metric => metric.value != null).map(simpleMetric),
     sections: report.sections.filter(section => section.items.length).filter(section => !(report.training?.length && section.domain === 'fitness')).map(section => ({ ...section, items: section.items.filter(item => !/主观睡眠质量未报告。$/.test(item.text) && !(sleepItem && /^昨夜睡眠分析/.test(item.text))).map(item => {
       const sleep = section.domain === 'health' ? parseSleep(item.text) : null;
-      return { ...item, text: sleep ? sleepTable(sleep) : simpleText(item.text).replace('（未扣除入睡耗时或夜醒）', '').replace(/[；;]\s*来源：[^\n]*?(?=\n|$)/g, '。'), sleep, evidence: item.evidence === 'estimated' ? null : item.evidence, coverage: null };
+      const plain = sleep ? sleepTable(sleep, l) : simpleText(item.text).replace('（未扣除入睡耗时或夜醒）', '').replace(/[；;]\s*来源：[^\n]*?(?=\n|$)/g, '。');
+      return { ...item, text: english && !sleep ? englishHeaders(plain) : plain, sleep, evidence: item.evidence === 'estimated' ? null : item.evidence, coverage: null };
     }) })),
     trends: report.trends.map(trend => ({ ...trend, points: trend.points.filter(point => point.value != null) })).filter(trend => trend.points.length >= 2), gaps: [] };
 }
@@ -77,10 +100,11 @@ export function parseSleep(text) {
   return { bed, wake, hours: Number(dm[1]), minutes: Number(dm[2]), deep: stage('深睡'), light: stage('浅睡'), rem: stage('快速眼动'),
     efficiency: num(/睡眠效率\s*(\d+)%/), awakenings: num(/清醒\s*(\d+)\s*次/), score: num(/睡眠评分\s*(\d+)/), heart_rate: num(/平均心率\s*(\d+)/) };
 }
-const sleepTable = d => {
-  const cols = [['入睡', d.bed], ['起床', d.wake], ['时长', d.hours + '时' + d.minutes + '分'],
-    ...(d.deep ? [['深睡', d.deep.pct + '%']] : []), ...(d.light ? [['浅睡', d.light.pct + '%']] : []), ...(d.rem ? [['快速眼动', d.rem.pct + '%']] : []),
-    ...(d.efficiency != null ? [['效率', d.efficiency + '%']] : []), ...(d.score != null ? [['评分', String(d.score)]] : [])];
+const sleepTable = (d, l) => {
+  const T = l.chart;
+  const cols = [[T.bed, d.bed], [T.wakeUp, d.wake], [T.duration, d.hours + T.hUnit + d.minutes + T.mUnit],
+    ...(d.deep ? [[T.deep, d.deep.pct + '%']] : []), ...(d.light ? [[T.light, d.light.pct + '%']] : []), ...(d.rem ? [[T.rem, d.rem.pct + '%']] : []),
+    ...(d.efficiency != null ? [[T.eff, d.efficiency + '%']] : []), ...(d.score != null ? [[T.score, String(d.score)]] : [])];
   return '| ' + cols.map(c => c[0]).join(' | ') + ' |\n| ' + cols.map(() => '---').join(' | ') + ' |\n| ' + cols.map(c => c[1]).join(' | ') + ' |';
 };
 // Inline-SVG charts for the HTML view (no external assets). Data comes only from the already simplified display report.
@@ -89,7 +113,7 @@ function parseMeals(report) {
   for (const item of section?.items ?? []) {
     const rows = String(item.text).split('\n').filter(row => row.trim().startsWith('|')).map(row => row.trim().slice(1, -1).split('|').map(c => c.trim()));
     if (rows.length < 2) continue;
-    const at = name => rows[0].indexOf(name), col = { meal: at('餐次'), kcal: at('kcal'), p: at('蛋白g'), f: at('脂肪g'), c: at('碳水g') };
+    const at = names => rows[0].findIndex(cell => [].concat(names).includes(cell)), col = { meal: at(MEAL_HEADERS.meal), kcal: at('kcal'), p: at(MEAL_HEADERS.p), f: at(MEAL_HEADERS.f), c: at(MEAL_HEADERS.c) };
     if (Object.values(col).some(i => i < 0)) continue;
     for (const row of rows.slice(1)) {
       if (row.every(cell => /^:?-{3,}:?$/.test(cell))) continue;
@@ -114,21 +138,23 @@ export function chartModel(report) {
 }
 // Training labels: short name (no bracketed notes) and one meta string per activity.
 export const trainingName = name => String(name).replace(/[（(][^）)]*[）)]/g, '').trim() || String(name);
-export const trainingMeta = activity => [activity.sets ? activity.sets + ' 组' + (activity.reps ? ' × ' + activity.reps + ' 次' : '') : null,
-  activity.minutes ? activity.minutes + ' 分钟' : null, activity.load].filter(Boolean).join(' · ');
+export const trainingMeta = (activity, l = labels('zh')) => [activity.sets ? activity.sets + l.chart.sets + (activity.reps ? ' × ' + activity.reps + l.chart.reps : '') : null,
+  activity.minutes ? activity.minutes + l.chart.minutes : null, activity.load].filter(Boolean).join(' · ');
 const trainingTotals = training => { const rows = training.flatMap(session => session.activities); return { activities: rows.length, sets: rows.reduce((sum, row) => sum + (row.sets ?? 0), 0) }; };
-export const trainingSummary = training => { const totals = trainingTotals(training); return '共 ' + totals.activities + ' 个动作' + (totals.sets ? ' · ' + totals.sets + ' 组' : ''); };
+export const trainingSummary = (training, l = labels('zh')) => { const totals = trainingTotals(training); return l.chart.activities(totals.activities) + (totals.sets ? ' · ' + totals.sets + l.chart.sets : ''); };
 export const cardColumns = count => count <= 3 ? Math.max(1, count) : count === 4 ? 2 : 3;
 function chartsHTML(report, e) {
-  const T = { meals: '每餐热量', kcal: 'kcal', macro: '热量来源', protein: '蛋白质', fat: '脂肪', carb: '碳水', week: '近几日睡眠', stages: '睡眠结构', deep: '深睡', light: '浅睡', rem: '快速眼动', day: '全天', avg: '平均', h: '小时', eff: '效率', score: '评分', hr: '心率', wake: '清醒', training: '训练' };
+  const l = labels(report.language ?? 'en'), T = l.chart;
   const card = (title, body, foot) => '<article class="chart"><h3>' + e(title) + '</h3><div class="c-body">' + body + '</div><div class="c-foot">' + (foot ?? '') + '</div></article>';
   const model = chartModel(report), cards = [];
   if (model.meals.length) {
     const meals = model.meals, max = Math.max(...meals.map(m => m.kcal)), rowH = 44, h = meals.length * rowH;
+    // Label column wide enough for the longest meal name (CJK about 11 px, Latin about 6 px at the label size).
+    const labelW = Math.min(110, Math.max(46, ...meals.map(m => [...String(m.meal)].reduce((w, ch) => w + (/[\u2E80-\uFFFF]/.test(ch) ? 11 : 6), 0) + 8))), barMax = 236 - labelW;
     const bars = meals.map((m, i) => {
-      const w = Math.max(6, Math.round(m.kcal / max * 190)), y = 8 + i * rowH;
-      return '<text x="0" y="' + (y + 20) + '" class="c-label">' + e(m.meal) + '</text><rect x="46" y="' + y + '" width="' + w + '" height="28" rx="7" fill="' + CHART_COLORS.kcal + '"/>' +
-        '<text x="' + (46 + w + 8) + '" y="' + (y + 20) + '" class="c-value">' + Math.round(m.kcal) + '</text>';
+      const w = Math.max(6, Math.round(m.kcal / max * barMax)), y = 8 + i * rowH;
+      return '<text x="0" y="' + (y + 20) + '" class="c-label">' + e(m.meal) + '</text><rect x="' + labelW + '" y="' + y + '" width="' + w + '" height="28" rx="7" fill="' + CHART_COLORS.kcal + '"/>' +
+        '<text x="' + (labelW + w + 8) + '" y="' + (y + 20) + '" class="c-value">' + Math.round(m.kcal) + '</text>';
     }).join('');
     cards.push(card(T.meals, '<svg viewBox="0 0 300 ' + (h + 12) + '" role="img" aria-label="' + e(T.meals) + '">' + bars + '</svg>', e(T.day) + ' <b>' + Math.round(model.dayKcal) + '</b> ' + e(T.kcal)));
   }
@@ -147,16 +173,16 @@ function chartsHTML(report, e) {
   if (model.training) {
     const rows = model.training.flatMap(session => session.activities);
     const body = '<div class="tr-list">' + rows.map(activity => '<div class="tr-row"><span class="tr-name">' + e(trainingName(activity.name)) + '</span><span class="tr-dots">' +
-      (activity.sets ? '●'.repeat(Math.min(activity.sets, 8)) : '') + '</span><span class="tr-meta">' + e(trainingMeta(activity)) + '</span></div>').join('') + '</div>';
-    cards.push(card(T.training, body, e(trainingSummary(model.training))));
+      (activity.sets ? '●'.repeat(Math.min(activity.sets, 8)) : '') + '</span><span class="tr-meta">' + e(trainingMeta(activity, l)) + '</span></div>').join('') + '</div>';
+    cards.push(card(T.training, body, e(trainingSummary(model.training, l))));
   }
   const sd = model.sleep;
   if (sd) {
     const parts = [['deep', sd.deep], ['light', sd.light], ['rem', sd.rem]].filter(([, v]) => v);
     const stack = parts.length ? '<div class="stack">' + parts.map(([k, v]) => '<span style="width:' + v.pct + '%;background:' + CHART_COLORS[k] + '"></span>').join('') + '</div>' +
       '<div class="stack-legend">' + parts.map(([k, v]) => '<span><i class="dot" style="background:' + CHART_COLORS[k] + '"></i>' + e(T[k]) + ' ' + v.pct + '%<small>' + e(v.time) + '</small></span>').join('') + '</div>' : '';
-    const body = '<div class="sleep-main"><div class="big">' + sd.hours + '<small>时</small>' + sd.minutes + '<small>分</small></div><div class="sleep-range">' + e(sd.bed) + ' → ' + e(sd.wake) + '</div>' + stack + '</div>';
-    const chips = [sd.efficiency != null ? T.eff + ' ' + sd.efficiency + '%' : null, sd.score != null ? T.score + ' ' + sd.score : null, sd.heart_rate != null ? T.hr + ' ' + sd.heart_rate : null, sd.awakenings != null ? T.wake + ' ' + sd.awakenings + ' 次' : null].filter(Boolean);
+    const body = '<div class="sleep-main"><div class="big">' + sd.hours + '<small>' + e(T.hUnit) + '</small>' + sd.minutes + '<small>' + e(T.mUnit) + '</small></div><div class="sleep-range">' + e(sd.bed) + ' → ' + e(sd.wake) + '</div>' + stack + '</div>';
+    const chips = [sd.efficiency != null ? T.eff + ' ' + sd.efficiency + '%' : null, sd.score != null ? T.score + ' ' + sd.score : null, sd.heart_rate != null ? T.hr + ' ' + sd.heart_rate : null, sd.awakenings != null ? T.wake + ' ' + sd.awakenings + T.times : null].filter(Boolean);
     cards.push(card(T.stages, body, '<div class="chips">' + chips.map(c => '<span class="chip">' + e(c) + '</span>').join('') + '</div>'));
   }
   if (model.week) {
@@ -201,6 +227,10 @@ export const labels = language => language.startsWith('zh') ? {
   ratingNote: '原量表自评', foodNote: '饮食部分记录不能代表全天摄入。', date: '日期', summary: '记录与分析',
   visibilityNote: '只展示已有信息；没展示的不代表当天没发生。', emptyReport: '本日暂无可展示的记录。',
   units: { h: '小时', min: '分钟', steps: '步' },
+  chart: { meals: '每餐热量', kcal: 'kcal', macro: '热量来源', protein: '蛋白质', fat: '脂肪', carb: '碳水', week: '近几日睡眠', stages: '睡眠结构', deep: '深睡', light: '浅睡', rem: '快速眼动',
+    day: '全天', avg: '平均', h: '小时', eff: '效率', score: '评分', hr: '心率', wake: '清醒', times: ' 次', training: '训练', hUnit: '时', mUnit: '分', bed: '入睡', wakeUp: '起床', duration: '时长',
+    sets: ' 组', reps: ' 次', minutes: ' 分钟', activities: n => '共 ' + n + ' 个动作', trainingCols: ['动作', '组数', '次数', '重量'],
+    advice: '不足与改进', allGood: '没有需要提示的项目。', met: '达标', sep: '、', high: '偏高', low: '偏低' },
   title: '每日数据与行动报告', fictional: '虚构数据样例 · 不代表用户真实情况', overview: '数据概览', actions: '行动进展', followups: '后续事项与专家协作',
   domains: '各领域记录', trends: '近七日已有记录', gaps: '记录缺口与限制', unknown: '未记录 / 未确认', withheld: '未纳入本报告',
   recorded: '有记录', missing: '未见可汇总记录', metric: '指标', value: '记录值', note: '说明', task: '行动', status: '状态', due: '期限', owner: '负责人',
@@ -221,7 +251,11 @@ export const labels = language => language.startsWith('zh') ? {
   detailNote: 'These records are not a health or productivity score.', trendNote: 'Filled dots are recorded values; hollow dots mark missing data. Lines stop at gaps.',
   actionNote: 'Existing states, with no automatic priority or resuming paused requests.', recordsNote: 'Plans, proposals and actual events stay distinct.',
   sourceFooter: 'Sources and checksums: report.json', continued: 'continued', allActions: 'Full states on the action pages',
-  ratingNote: 'Original self-rating scale', foodNote: 'Partial food records are not full-day intake.', date: 'Date', units: {}, summary: 'Observations & analysis',
+  ratingNote: 'Original self-rating scale', foodNote: 'Partial food records are not full-day intake.', date: 'Date', units: {},
+  chart: { meals: 'Energy per meal', kcal: 'kcal', macro: 'Energy sources', protein: 'Protein', fat: 'Fat', carb: 'Carbs', week: 'Recent sleep', stages: 'Sleep', deep: 'Deep', light: 'Light', rem: 'REM',
+    day: 'Day total', avg: 'Average', h: 'h', eff: 'Efficiency', score: 'Score', hr: 'Heart rate', wake: 'Awake', times: '×', training: 'Training', hUnit: 'h', mUnit: 'm', bed: 'Asleep', wakeUp: 'Woke', duration: 'Duration',
+    sets: ' sets', reps: ' reps', minutes: ' min', activities: n => n + (n === 1 ? ' exercise' : ' exercises'), trainingCols: ['Exercise', 'Sets', 'Reps', 'Load'],
+    advice: 'Shortfalls & improvements', allGood: 'Nothing flagged against your targets.', met: 'On target', sep: ', ', high: 'High', low: 'Low' }, summary: 'Observations & analysis',
   visibilityNote: 'Only available information is shown; omitted items do not imply inactivity.', emptyReport: 'No displayable records for this day.',
   title: 'Daily data & action report', fictional: 'Fictional demonstration — not user facts', overview: 'Data overview', actions: 'Action progress', followups: 'Follow-ups & expert coordination',
   domains: 'Domain records', trends: 'Seven-day recorded values', gaps: 'Coverage & limitations', unknown: 'Unknown / unrecorded', withheld: 'Not included',
@@ -246,7 +280,7 @@ export const actionLabel = (action, l) => (l[action.status] ?? action.status) + 
 export const displayValue = (metric, l) => {
   if (metric.value == null) return l.unknown;
   if (metric.unit === '1–5') return metric.value + '/5';
-  const number = metric.range && metric.range.low !== metric.range.high ? metric.range.low + ' – ' + metric.range.high : metric.value;
+  const number = metric.range && metric.range.low !== metric.range.high ? metric.range.low + ' – ' + metric.range.high : (metric.missing_items > 0 ? '≥ ' : '') + metric.value;
   return number + ' ' + (l.units[metric.unit] ?? metric.unit);
 };
 export const domainPalette = domain => ({
@@ -281,13 +315,13 @@ export function reportMarkdown(report, recipe = reportPresentationRecipe()) {
     report.metrics.forEach(item => out.push('| ' + [item.label, valueText(item, l)].map(md).join(' | ') + ' |'));
   }
   if (report.advice && (report.advice.flags.length || report.advice.ok.length)) {
-    out.push('', '## 不足与改进', '');
-    if (report.advice.flags.length) report.advice.flags.forEach(item => out.push('- [' + item.tag + '] ' + item.text)); else out.push('- 各项都在目标内。');
-    if (report.advice.ok.length) out.push('', '达标：' + report.advice.ok.map(item => item.text).join('、'));
+    out.push('', '## ' + l.chart.advice, '');
+    if (report.advice.flags.length) report.advice.flags.forEach(item => out.push('- [' + l.chart[item.level] + '] ' + item.text)); else out.push('- ' + l.chart.allGood);
+    if (report.advice.ok.length) out.push('', l.chart.met + ': ' + report.advice.ok.map(item => item.text).join(l.chart.sep));
   }
   if (report.training?.length) {
-    out.push('', '## 训练', '', '| 动作 | 组数 | 次数 | 重量 |', '| --- | --- | --- | --- |');
-    report.training.flatMap(session => session.activities).forEach(activity => out.push('| ' + [trainingName(activity.name), activity.sets ?? (activity.minutes ? activity.minutes + ' 分钟' : '—'), activity.reps ?? '—', activity.load ?? '—'].join(' | ') + ' |'));
+    out.push('', '## ' + l.chart.training, '', '| ' + l.chart.trainingCols.join(' | ') + ' |', '| --- | --- | --- | --- |');
+    report.training.flatMap(session => session.activities).forEach(activity => out.push('| ' + [trainingName(activity.name), activity.sets ?? (activity.minutes ? activity.minutes + l.chart.minutes : '—'), activity.reps ?? '—', activity.load ?? '—'].join(' | ') + ' |'));
   }
   if (report.actions.length) {
     out.push('', '## ' + l.actions, '', l.actionScope, '', '| ' + [l.task, l.status, l.due, l.owner].join(' | ') + ' |', '|---|---|---|---|');
@@ -328,9 +362,9 @@ export function reportHTML(report, recipe = reportPresentationRecipe()) {
   const adviceHTML = () => {
     const advice = report.advice;
     if (!advice || (!advice.flags.length && !advice.ok.length)) return '';
-    return heading('', '不足与改进') + (advice.flags.length
-      ? '<div class="tips" style="--cols:' + cardColumns(advice.flags.length) + '">' + advice.flags.map(item => '<article class="tip' + (item.tag === '偏低' ? ' low' : '') + '"><span class="tip-tag">' + e(item.tag) + '</span><p>' + e(item.text) + '</p></article>').join('') + '</div>'
-      : '<p class="meta">各项都在目标内。</p>') +
+    return heading('', l.chart.advice) + (advice.flags.length
+      ? '<div class="tips" style="--cols:' + cardColumns(advice.flags.length) + '">' + advice.flags.map(item => '<article class="tip' + (item.level === 'low' ? ' low' : '') + '"><span class="tip-tag">' + e(l.chart[item.level]) + '</span><p>' + e(item.text) + '</p></article>').join('') + '</div>'
+      : '<p class="meta">' + e(l.chart.allGood) + '</p>') +
       (advice.ok.length ? '<div class="chips ok">' + advice.ok.map(item => '<span class="chip good">✓ ' + e(item.text) + '</span>').join('') + '</div>' : '');
   };
   const empty = !report.metrics.length && !report.sections.length && !report.actions.length && !report.followups.length && !report.summary.length && !report.trends.length;

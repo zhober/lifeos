@@ -29,7 +29,7 @@ export function pdfRuntime(options = {}) {
 
 export async function renderReportPDF(report, runtime) {
   report = reportForDisplay(report);
-  const l = labels(report.language);
+  const l = labels(report.language), T = l.chart;
   const doc = new runtime.PDFDocument({ size: 'A4', margins: { top: 36, bottom: 46, left: 36, right: 36 }, bufferPages: true,
     info: { Title: report.date + ' · ' + l.title, Author: 'LifeOS', Subject: report.basis === 'fictional' ? l.fictional : l.scope, Creator: 'LifeOS daily reporting' } });
   doc.registerFont('Body', runtime.font.path, runtime.font.family); doc.font('Body');
@@ -45,7 +45,15 @@ export async function renderReportPDF(report, runtime) {
   const lines = (text, maxWidth, size) => {
     doc.font('Body').fontSize(size); const result = [];
     for (const paragraph of safeText(text).replaceAll('\t', '  ').split('\n')) {
-      let current = ''; for (const char of [...paragraph]) { if (current && doc.widthOfString(current + char) > maxWidth) { result.push(current); current = char; } else current += char; } result.push(current);
+      // Break CJK text between characters and Latin text between words; a word wider than the line still breaks by character.
+      const tokens = paragraph.match(/[⺀-￿]|[^\s⺀-￿]+\s*|\s+/g) ?? [];
+      let current = '';
+      for (const token of tokens) {
+        if (!current || doc.widthOfString(current + token.trimEnd()) <= maxWidth) { current += token; continue; }
+        result.push(current.trimEnd()); current = token.trimStart();
+        while (current.length > 1 && doc.widthOfString(current.trimEnd()) > maxWidth) { let cut = current.length - 1; while (cut > 1 && doc.widthOfString(current.slice(0, cut)) > maxWidth) cut--; result.push(current.slice(0, cut)); current = current.slice(cut); }
+      }
+      result.push(current.trimEnd());
     }
     return result;
   };
@@ -159,19 +167,20 @@ export async function renderReportPDF(report, runtime) {
     }
   };
   const model = chartModel(report), chartCards = [];
-  if (model.meals.length) chartCards.push({ title: '每餐热量',
-    footer: (fx, fy) => sequence([['全天', 8, muted], [String(Math.round(model.dayKcal)), 9, ink], ['kcal', 8, muted]], fx, fy + 6),
+  if (model.meals.length) chartCards.push({ title: T.meals,
+    footer: (fx, fy) => sequence([[T.day, 8, muted], [String(Math.round(model.dayKcal)), 9, ink], [T.kcal, 8, muted]], fx, fy + 6),
     body: (bx, by, bw, bh) => {
       const meals = model.meals, rowH = Math.min(26, bh / meals.length), top = by + (bh - rowH * meals.length) / 2, max = Math.max(...meals.map(m => m.kcal));
       meals.forEach((m, i) => {
-        const yy = top + i * rowH, barH = Math.min(16, rowH - 7), barW = Math.max(4, (bw - 30 - 30) * m.kcal / max);
+        const labelW = Math.min(70, Math.max(30, ...meals.map(item => textWidth(String(item.meal), 7.5) + 6)));
+        const yy = top + i * rowH, barH = Math.min(16, rowH - 7), barW = Math.max(4, (bw - labelW - 30) * m.kcal / max);
         put(m.meal, bx, yy + (rowH - 8) / 2 - 1, 7.5, muted);
-        doc.roundedRect(bx + 30, yy + (rowH - barH) / 2, barW, barH, 4).fill(col.kcal);
-        put(String(Math.round(m.kcal)), bx + 30 + barW + 5, yy + (rowH - 8) / 2 - 1, 8, ink);
+        doc.roundedRect(bx + labelW, yy + (rowH - barH) / 2, barW, barH, 4).fill(col.kcal);
+        put(String(Math.round(m.kcal)), bx + labelW + barW + 5, yy + (rowH - 8) / 2 - 1, 8, ink);
       });
     } });
-  if (model.macro) chartCards.push({ title: '热量来源',
-    footer: (fx, fy, fw) => dotLegend(model.macro.order.map(key => ({ color: col[key], text: ({ protein: '蛋白质', carb: '碳水', fat: '脂肪' })[key] + ' ' + Math.round(model.macro.g[key]) + 'g ' + Math.round(model.macro.energy[key] / model.macro.sum * 100) + '%' })), fx, fy, fw),
+  if (model.macro) chartCards.push({ title: T.macro,
+    footer: (fx, fy, fw) => dotLegend(model.macro.order.map(key => ({ color: col[key], text: T[key] + ' ' + Math.round(model.macro.g[key]) + 'g ' + Math.round(model.macro.energy[key] / model.macro.sum * 100) + '%' })), fx, fy, fw),
     body: (bx, by, bw) => {
       const { energy, sum, order } = model.macro, cx = bx + bw / 2, cy = by + 40, r = 29; let angle = -Math.PI / 2;
       doc.save().lineWidth(10).lineCap('butt');
@@ -185,25 +194,25 @@ export async function renderReportPDF(report, runtime) {
       doc.restore();
       const total = String(Math.round(model.dayKcal)); put(total, cx - textWidth(total, 15) / 2, cy - 9, 15, ink); put('kcal', cx - textWidth('kcal', 6.5) / 2, cy + 8, 6.5, muted);
     } });
-  if (model.training) chartCards.push({ title: '训练', footer: (fx, fy) => put(trainingSummary(model.training), fx, fy + 6, 8, muted),
+  if (model.training) chartCards.push({ title: T.training, footer: (fx, fy) => put(trainingSummary(model.training, l), fx, fy + 6, 8, muted),
     body: (bx, by, bw, bh) => {
       const rows = model.training.flatMap(session => session.activities).slice(0, 8), rowH = Math.min(25, bh / rows.length), two = rowH >= 20, top = by + (bh - rowH * rows.length) / 2;
       rows.forEach((activity, i) => {
-        const yy = top + i * rowH, meta = trainingMeta(activity), nameWidth = two ? bw - 46 : bw * 0.5;
+        const yy = top + i * rowH, meta = trainingMeta(activity, l), nameWidth = two ? bw - 46 : bw * 0.5;
         put(clip(trainingName(activity.name), 8.3, nameWidth), bx, yy + (two ? 1 : (rowH - 8) / 2), 8.3, ink);
         const dots = Math.min(activity.sets ?? 0, 6);
         for (let k = 0; k < dots; k++) doc.circle(bx + bw - 3 - (dots - 1 - k) * 5.5, yy + 5, 1.8).fill('#287B65');
         if (two) put(clip(meta, 7, bw), bx, yy + 12.5, 7, muted); else right(clip(meta, 7, bw * 0.45), bx + bw, yy + (rowH - 7) / 2, 7, muted);
       });
     } });
-  if (model.sleep) chartCards.push({ title: '睡眠结构',
-    footer: (fx, fy, fw) => { const sd = model.sleep, chips = [sd.efficiency != null ? '效率 ' + sd.efficiency + '%' : null, sd.score != null ? '评分 ' + sd.score : null, sd.heart_rate != null ? '心率 ' + sd.heart_rate : null, sd.awakenings != null ? '清醒 ' + sd.awakenings + ' 次' : null].filter(Boolean);
+  if (model.sleep) chartCards.push({ title: T.stages,
+    footer: (fx, fy, fw) => { const sd = model.sleep, chips = [sd.efficiency != null ? T.eff + ' ' + sd.efficiency + '%' : null, sd.score != null ? T.score + ' ' + sd.score : null, sd.heart_rate != null ? T.hr + ' ' + sd.heart_rate : null, sd.awakenings != null ? T.wake + ' ' + sd.awakenings + T.times : null].filter(Boolean);
       lines(chips.join('  ·  '), fw, 7.2).slice(0, 2).forEach((line, i) => put(line, fx, fy + i * 10, 7.2, muted)); },
     body: (bx, by, bw) => {
       const sd = model.sleep;
-      sequence([[String(sd.hours), 22, '#4B3F8C'], ['时', 8, muted], [String(sd.minutes), 22, '#4B3F8C'], ['分', 8, muted]], bx, by);
+      sequence([[String(sd.hours), 22, '#4B3F8C'], [T.hUnit, 8, muted], [String(sd.minutes), 22, '#4B3F8C'], [T.mUnit, 8, muted]], bx, by);
       put(sd.bed + ' → ' + sd.wake, bx, by + 30, 8.5, muted);
-      const parts = [['深睡', sd.deep, col.deep], ['浅睡', sd.light, col.light], ['快速眼动', sd.rem, col.rem]].filter(item => item[1]);
+      const parts = [[T.deep, sd.deep, col.deep], [T.light, sd.light, col.light], [T.rem, sd.rem, col.rem]].filter(item => item[1]);
       if (parts.length) {
         doc.save().roundedRect(bx, by + 50, bw, 9, 4.5).clip(); let cursor = bx;
         for (const [, stage, color] of parts) { const w = bw * stage.pct / 100; doc.rect(cursor, by + 50, w + .5, 9).fill(color); cursor += w; }
@@ -212,8 +221,8 @@ export async function renderReportPDF(report, runtime) {
         parts.forEach(([name, stage, color], i) => { doc.circle(bx + i * colW + 2.5, by + 70, 2.3).fill(color); put(name + ' ' + stage.pct + '%', bx + i * colW + 8, by + 66.5, 7, ink); put(stage.time, bx + i * colW + 8, by + 76, 6.5, muted); });
       }
     } });
-  if (model.week) chartCards.push({ title: '近几日睡眠',
-    footer: (fx, fy) => sequence([['平均', 8, muted], [(model.week.reduce((sum, point) => sum + point.value, 0) / model.week.length).toFixed(1), 9, ink], ['小时', 8, muted]], fx, fy + 6),
+  if (model.week) chartCards.push({ title: T.week,
+    footer: (fx, fy) => sequence([[T.avg, 8, muted], [(model.week.reduce((sum, point) => sum + point.value, 0) / model.week.length).toFixed(1), 9, ink], [T.h, 8, muted]], fx, fy + 6),
     body: (bx, by, bw, bh) => {
       const pts = model.week, max = Math.max(9, ...pts.map(point => point.value)), slot = bw / pts.length, barW = Math.min(18, slot * 0.6), chartH = bh - 24;
       pts.forEach((point, i) => {
@@ -240,23 +249,23 @@ export async function renderReportPDF(report, runtime) {
   // ---- shortfalls and improvements
   const advice = report.advice;
   if (advice && (advice.flags.length || advice.ok.length)) {
-    heading('不足与改进');
+    heading(T.advice);
     const colWidth = (width - 10) / 2;
     for (let index = 0; index < advice.flags.length; index += 2) {
       const row = advice.flags.slice(index, index + 2), heights = row.map(item => 14 + lines(item.text, colWidth - 66, 8.6).length * 12.2), cardH = Math.max(...heights, 34);
       ensureRoom(cardH + 8);
       row.forEach((item, k) => {
-        const x = left + k * (colWidth + 10), low = item.tag === '偏低';
+        const x = left + k * (colWidth + 10), low = item.level === 'low';
         doc.roundedRect(x, y, colWidth, cardH, 9).fill('#FFFFFF'); doc.roundedRect(x, y, colWidth, cardH, 9).lineWidth(.6).strokeColor(border).stroke();
         doc.roundedRect(x, y + 6, 3.5, cardH - 12, 1.7).fill(low ? '#C98A2B' : '#D06A5A');
-        doc.roundedRect(x + 13, y + 9, 32, 14, 5).fill(low ? '#FAEDD1' : '#FBE9E5'); put(item.tag, x + 18, y + 12, 8, low ? '#906326' : '#A3483A');
+        doc.roundedRect(x + 13, y + 9, 32, 14, 5).fill(low ? '#FAEDD1' : '#FBE9E5'); put(T[item.level], x + 18, y + 12, 8, low ? '#906326' : '#A3483A');
         lines(item.text, colWidth - 66, 8.6).forEach((line, i) => put(line, x + 54, y + 9 + i * 12.2, 8.6, ink));
       });
       y += cardH + 8;
     }
-    if (!advice.flags.length) paragraph('各项都在目标内。', 9, muted);
+    if (!advice.flags.length) paragraph(T.allGood, 9, muted);
     if (advice.ok.length) {
-      let px = left; ensureRoom(24); put('达标', px, y + 5, 8, muted); px += 30;
+      let px = left; ensureRoom(24); put(T.met, px, y + 5, 8, muted); px += 30;
       for (const item of advice.ok) {
         const w = textWidth(item.text, 8) + 16; if (px + w > left + width) { px = left; y += 22; ensureRoom(24); }
         doc.roundedRect(px, y, w, 18, 9).fill('#E4EDE3'); put(item.text, px + 8, y + 5, 8, '#2F6B52'); px += w + 6;

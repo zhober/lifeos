@@ -110,8 +110,10 @@ export function normalizeDailyReport(input) {
     ensure(['complete', 'partial', 'unknown', 'unconfirmed'].includes(item.coverage) && ['reported', 'documented', 'estimated', 'inferred', 'legacy_unverified'].includes(item.evidence), 'Declare metric coverage and evidence.');
     if (item.range != null) ensure(object(item.range) && ['low', 'estimate', 'high'].every(key => typeof item.range[key] === 'number' && Number.isFinite(item.range[key]))
       && item.range.low <= item.range.estimate && item.range.estimate <= item.range.high && item.value === item.range.estimate, 'Metric range must match its estimate.');
+    if (item.missing_items != null) ensure(Number.isInteger(item.missing_items) && item.missing_items >= 0, 'missing_items is a count of recorded items without a value.');
+    // missing_items > 0: the value is a lower bound because some recorded items lack this quantity.
     return { id: item.id, domain: item.domain, label: item.label, unit: item.unit, value: item.value ?? null, range: item.range ?? null,
-      coverage: item.coverage, evidence: item.evidence, source_ids: item.source_ids ?? [] };
+      coverage: item.coverage, evidence: item.evidence, source_ids: item.source_ids ?? [], ...(item.missing_items > 0 ? { missing_items: item.missing_items } : {}) };
   });
   ensure(new Set(metrics.map(item => item.id)).size === metrics.length, 'Metric IDs are unique.');
   const sectionMap = new Map();

@@ -4,7 +4,19 @@
 
 <p align="center"><b>An AI Operating System for Your Life</b><br>Models change. Your files stay.</p>
 
+<p align="center">
+  <a href="https://github.com/zhober/lifeos/actions/workflows/check.yml"><img src="https://github.com/zhober/lifeos/actions/workflows/check.yml/badge.svg" alt="check"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
+  <img src="https://img.shields.io/badge/node-%E2%89%A520-green.svg" alt="Node.js 20+">
+</p>
+
 <p align="center">English | <a href="README.zh-CN.md">简体中文</a></p>
+
+**In 30 seconds**
+
+- **What:** a personal assistant whose memory, records and instructions are plain Markdown/JSON files in a folder you own.
+- **Who it serves:** anyone who wants one assistant for meals, sleep, training, study, work, money and trips, without locking their life into one app or one model.
+- **How:** deploy a vault, open it with Claude Code, Codex CLI, Gemini CLI or Cursor, and talk normally. Switch models any time; the files stay.
 
 LifeOS is a personal assistant made of plain files. Your daily records, profile, long-term memory and advice, together with the instructions the assistant follows, live in one folder of Markdown and JSON that you own. Any AI agent that can read and write files and run Node.js can open that folder and take over: Claude Code, Codex CLI, Gemini CLI, Cursor or anything that reads `AGENTS.md`. Models are replaceable; the files stay the same. There is no server, no account and no database.
 
@@ -22,6 +34,22 @@ LifeOS is a personal assistant made of plain files. Your daily records, profile,
 - **Daily report.** A data-and-actions summary of a day as JSON, Markdown and HTML, with an optional PDF.
 - **Privacy first.** Every personal detail is voluntary, and a declined topic stays declined for every model that opens the vault.
 - **Advice only for money and bookings.** Shopping, travel and finance are research and advice; LifeOS never buys, books, pays or submits forms. For shopping research you may log in yourself in the browser and LifeOS will only read: no cart, checkout, orders, payment or coupon claiming, and credentials are never requested or stored.
+
+## See it in action
+
+One fictional day, sent as plain messages:
+
+> *"Breakfast: a bowl of oats with a glass of milk, a boiled egg and a banana."*
+> *"Lunch at the canteen: a bowl of rice, chicken breast with broccoli, tomato and egg."*
+> *"Leg day at the gym, squats 5x5, about an hour, pretty tired."*
+> *"Dinner: a piece of salmon, tofu, a small bowl of rice, then a cup of yogurt."*
+> *"Bed at 11:30, up at 7, slept well."*
+
+Each message is saved in one step with portion assumptions and ranges, followed by short suggestions. The next morning's sleep message triggers the daily report:
+
+<p align="center"><img src="docs/assets/demo-report.jpg" alt="LifeOS daily report generated from the messages above" width="720"></p>
+
+The report also comes as Markdown, JSON and PDF. A value that some foods cannot supply (here fiber, missing for several items in the composition table) is shown as a lower bound, never as a shortfall.
 
 ## Requirements
 

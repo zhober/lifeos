@@ -4,7 +4,19 @@
 
 <p align="center"><b>你的 AI 生活操作系统</b><br>模型会换，文件长存。</p>
 
+<p align="center">
+  <a href="https://github.com/zhober/lifeos/actions/workflows/check.yml"><img src="https://github.com/zhober/lifeos/actions/workflows/check.yml/badge.svg" alt="check"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
+  <img src="https://img.shields.io/badge/node-%E2%89%A520-green.svg" alt="Node.js 20+">
+</p>
+
 <p align="center"><a href="README.md">English</a> | 简体中文</p>
+
+**30 秒看懂**
+
+- **是什么**：一个个人助理，它的记忆、记录和指令都是你自己文件夹里的 Markdown / JSON 文件。
+- **适合谁**：想用一个助理管饮食、睡眠、训练、学习、工作、财务和出行，又不想把生活锁在某个 App 或某个模型里的人。
+- **怎么用**：部署一个个人库，用 Claude Code、Codex CLI、Gemini CLI 或 Cursor 打开，正常聊天即可。模型随时可换，文件不变。
 
 LifeOS 是一个由普通文件组成的个人助理。你的日常记录、档案、长期记忆和建议，连同助理遵循的指令，都放在一个归你所有的 Markdown / JSON 文件夹里。任何能读写文件、能运行 Node.js 的 AI 智能体都可以打开这个文件夹接手：Claude Code、Codex CLI、Gemini CLI、Cursor，或任何会读取 `AGENTS.md` 的工具。模型随时可以换，文件始终是同一套。没有服务器，不用注册账号，也没有数据库。
 
@@ -22,6 +34,22 @@ LifeOS 是一个由普通文件组成的个人助理。你的日常记录、档�
 - **日报**：按天汇总数据与行动，保存为 JSON、Markdown、HTML，PDF 可选。
 - **隐私优先**：所有个人信息都是自愿提供的；你拒绝过的话题，换任何模型打开个人库都继续有效。
 - **涉及钱和预订只给建议**：购物、旅行、财务只做调研和建议，LifeOS 不会下单、预订、付款或提交表单。购物调研时你可以自己在浏览器里登录，LifeOS 只看不动：不加购物车、不进结算、不下单付款、不领券，也不会索要或保存账号凭证。
+
+## 效果演示
+
+虚构的一天，用普通消息发送（演示库设为英文）：
+
+> *"Breakfast: a bowl of oats with a glass of milk, a boiled egg and a banana."*（早饭：一碗燕麦、一杯牛奶、一个煮鸡蛋、一根香蕉）
+> *"Lunch at the canteen: a bowl of rice, chicken breast with broccoli, tomato and egg."*（食堂午饭：米饭、西兰花鸡胸、番茄炒蛋）
+> *"Leg day at the gym, squats 5x5, about an hour, pretty tired."*（练腿，深蹲 5×5，约一小时）
+> *"Dinner: a piece of salmon, tofu, a small bowl of rice, then a cup of yogurt."*（晚饭：三文鱼、豆腐、一小碗米饭，饭后酸奶）
+> *"Bed at 11:30, up at 7, slept well."*（11 点半睡，7 点起，睡得不错）
+
+每条消息一步存好，附份量假设和估算范围，随后给出简短建议。第二天早上提交睡眠后自动生成日报：
+
+<p align="center"><img src="docs/assets/demo-report.jpg" alt="由上述消息生成的 LifeOS 日报" width="720"></p>
+
+日报同时保存为 Markdown、JSON 和 PDF，界面语言跟随设置。某些食物在成分表里缺数据的营养素（这里是膳食纤维）显示为下限，不会被当作“偏低”。
 
 ## 运行要求
 
