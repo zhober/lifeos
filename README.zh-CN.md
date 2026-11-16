@@ -5,7 +5,6 @@
 <p align="center"><b>你的 AI 生活操作系统</b><br>模型会换，文件长存。</p>
 
 <p align="center">
-  <a href="https://github.com/zhober/lifeos/actions/workflows/check.yml"><img src="https://github.com/zhober/lifeos/actions/workflows/check.yml/badge.svg" alt="check"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/node-%E2%89%A520-green.svg" alt="Node.js 20+">
 </p>

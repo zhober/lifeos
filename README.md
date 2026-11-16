@@ -5,7 +5,6 @@
 <p align="center"><b>An AI Operating System for Your Life</b><br>Models change. Your files stay.</p>
 
 <p align="center">
-  <a href="https://github.com/zhober/lifeos/actions/workflows/check.yml"><img src="https://github.com/zhober/lifeos/actions/workflows/check.yml/badge.svg" alt="check"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/node-%E2%89%A520-green.svg" alt="Node.js 20+">
 </p>
