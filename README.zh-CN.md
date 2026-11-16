@@ -38,11 +38,11 @@ LifeOS 是一个由普通文件组成的个人助理。你的日常记录、档�
 
 虚构的一天，用普通消息发送（演示库设为英文）：
 
-> *"Breakfast: a bowl of oats with a glass of milk, a boiled egg and a banana."*（早饭：一碗燕麦、一杯牛奶、一个煮鸡蛋、一根香蕉）
-> *"Lunch at the canteen: a bowl of rice, chicken breast with broccoli, tomato and egg."*（食堂午饭：米饭、西兰花鸡胸、番茄炒蛋）
-> *"Leg day at the gym, squats 5x5, about an hour, pretty tired."*（练腿，深蹲 5×5，约一小时）
-> *"Dinner: a piece of salmon, tofu, a small bowl of rice, then a cup of yogurt."*（晚饭：三文鱼、豆腐、一小碗米饭，饭后酸奶）
-> *"Bed at 11:30, up at 7, slept well."*（11 点半睡，7 点起，睡得不错）
+> - *"Breakfast: a bowl of oats with a glass of milk, a boiled egg and a banana."*（早饭：一碗燕麦、一杯牛奶、一个煮鸡蛋、一根香蕉）
+> - *"Lunch at the canteen: a bowl of rice, chicken breast with broccoli, tomato and egg."*（食堂午饭：米饭、西兰花鸡胸、番茄炒蛋）
+> - *"Leg day at the gym, squats 5x5, about an hour, pretty tired."*（练腿，深蹲 5×5，约一小时）
+> - *"Dinner: a piece of salmon, tofu, a small bowl of rice, then a cup of yogurt."*（晚饭：三文鱼、豆腐、一小碗米饭，饭后酸奶）
+> - *"Bed at 11:30, up at 7, slept well."*（11 点半睡，7 点起，睡得不错）
 
 每条消息一步存好，附份量假设和估算范围，随后给出简短建议。第二天早上提交睡眠后自动生成日报：
 

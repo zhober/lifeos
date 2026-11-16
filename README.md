@@ -38,11 +38,11 @@ LifeOS is a personal assistant made of plain files. Your daily records, profile,
 
 One fictional day, sent as plain messages:
 
-> *"Breakfast: a bowl of oats with a glass of milk, a boiled egg and a banana."*
-> *"Lunch at the canteen: a bowl of rice, chicken breast with broccoli, tomato and egg."*
-> *"Leg day at the gym, squats 5x5, about an hour, pretty tired."*
-> *"Dinner: a piece of salmon, tofu, a small bowl of rice, then a cup of yogurt."*
-> *"Bed at 11:30, up at 7, slept well."*
+> - *"Breakfast: a bowl of oats with a glass of milk, a boiled egg and a banana."*
+> - *"Lunch at the canteen: a bowl of rice, chicken breast with broccoli, tomato and egg."*
+> - *"Leg day at the gym, squats 5x5, about an hour, pretty tired."*
+> - *"Dinner: a piece of salmon, tofu, a small bowl of rice, then a cup of yogurt."*
+> - *"Bed at 11:30, up at 7, slept well."*
 
 Each message is saved in one step with portion assumptions and ranges, followed by short suggestions. The next morning's sleep message triggers the daily report:
 
