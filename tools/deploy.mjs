@@ -28,7 +28,7 @@ if (legacyEntries.length) {
 // 系统文件：覆盖更新
 const SYSTEM = [...Object.values(project.entrypoints), 'project.json', project.definitions.agents_directory,
   project.definitions.disabled_agents_directory, project.definitions.workflows_directory, 'config',
-  'experts/_common.md', 'tools', 'templates', 'data/food/README.md'];
+  'experts/_common.md', 'tools', 'templates', 'data/food/README.md', 'docs/assets/lifeos-banner.jpg'];
 // Optional reference tables the user installs for personal use (data/food/README.md); they are not distributed.
 // Copied only into a vault that has none, never overwritten, never recorded in the manifest and never removed,
 // so an upgrade from a source without them leaves a vault's existing copies untouched.

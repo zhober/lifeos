@@ -1,6 +1,10 @@
-# LifeOS
+<p align="center"><img src="docs/assets/lifeos-banner.jpg" alt="LifeOS — 你的 AI 生活操作系统" width="100%"></p>
 
-[English](README.md) | 简体中文
+<h1 align="center">LifeOS</h1>
+
+<p align="center"><b>你的 AI 生活操作系统</b><br>模型会换，文件长存。</p>
+
+<p align="center"><a href="README.md">English</a> | 简体中文</p>
 
 LifeOS 是一个由普通文件组成的个人助理。你的日常记录、档案、长期记忆和建议，连同助理遵循的指令，都放在一个归你所有的 Markdown / JSON 文件夹里。任何能读写文件、能运行 Node.js 的 AI 智能体都可以打开这个文件夹接手：Claude Code、Codex CLI、Gemini CLI、Cursor，或任何会读取 `AGENTS.md` 的工具。模型随时可以换，文件始终是同一套。没有服务器，不用注册账号，也没有数据库。
 

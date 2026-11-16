@@ -1,6 +1,10 @@
-# LifeOS
+<p align="center"><img src="docs/assets/lifeos-banner.jpg" alt="LifeOS — An AI Operating System for Your Life" width="100%"></p>
 
-English | [简体中文](README.zh-CN.md)
+<h1 align="center">LifeOS</h1>
+
+<p align="center"><b>An AI Operating System for Your Life</b><br>Models change. Your files stay.</p>
+
+<p align="center">English | <a href="README.zh-CN.md">简体中文</a></p>
 
 LifeOS is a personal assistant made of plain files. Your daily records, profile, long-term memory and advice, together with the instructions the assistant follows, live in one folder of Markdown and JSON that you own. Any AI agent that can read and write files and run Node.js can open that folder and take over: Claude Code, Codex CLI, Gemini CLI, Cursor or anything that reads `AGENTS.md`. Models are replaceable; the files stay the same. There is no server, no account and no database.
 
