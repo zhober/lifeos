@@ -22,8 +22,10 @@ This is the authoritative configuration policy for every LifeOS runtime. Read it
 | Financial worksheets and conditional calculations | `docs/domains/FINANCE.md`, `agents/finance-advisor.md`, `tools/finance.mjs`; shared finance size/mode declarations |
 | Travel plans, source checks and continuity | `docs/domains/TRAVEL.md`, `agents/travel-planner.md`, `tools/travel.mjs`; shared travel mode/login declarations |
 | Daily data/action reporting and morning sleep event | `docs/domains/REPORTING.md`, `workflows/report/`, `tools/report.mjs`; shared reporting defaults and optional PDF runtime manifests |
+| Message digests (literature, news, further kinds) | `docs/domains/DIGEST.md`, `workflows/digest/`, `tools/digest.mjs`; shared kinds and rules in `project.json` digest; the user's interests and sources in `profile/digest/<kind>.json` |
 | User language, timezone, region, currency, shopping channels | `profile/preferences.json` through `tools/language.mjs` and `tools/settings.mjs`; resolution order in `docs/core/HANDBOOK.md` Regional settings |
 | Other personal information | `profile/` and the personal-data directories in the manifest |
+| Standing preferences read at every start; per-vault instruction adjustments; proposed system changes; scratch space | `profile/working.md` through `tools/working.mjs`; `local/`; `evolve/pending/`; `.lifeos/tmp/` through `tools/tidy.mjs` (see Working notes and local adjustments) |
 | Voluntary disclosure and effective privacy preferences | This document; configured profile/preferences.json privacy defaults/subject blocks; tools/privacy.mjs |
 | Optional runtime-specific settings | `config/runtimes/<runtime>.<native-extension>` |
 | Research, rationale, drafts, and iteration history | `evolve/` |
@@ -47,6 +49,21 @@ The shared `research` setting defaults to lightweight and requires a concrete re
 ## Regional settings
 
 No region is built in. project.json `language` ships as `en` and is only the default until the user chooses during setup; `timezone` ships as `null`, meaning the runtime system timezone. Tools resolve the timezone once through tools/lib.mjs (user preference, project.json, the `LIFEOS_TIMEZONE` declared host timezone, system clock) and validate IANA names; records keep the timezone actually used. Region (ISO 3166-1 alpha-2), currency (ISO 4217) and shopping channels are optional user preferences asked only when a domain needs them, under the voluntary-disclosure policy. `node tools/settings.mjs show` prints the effective values and sources; the layout checker validates their format. A runtime adapter may set `LIFEOS_TIMEZONE` when its host clock differs from the user's timezone; a saved user preference still wins. Do not change global machine settings for it.
+
+## Message digests
+
+`project.json` digest registers the digest kinds and their collectors (literature: PubMed journals and preprint servers; news: RSS/Atom feeds) and the shared rules: queue entry score, expiry and size, report cap, short-abstract threshold and collection windows. Interests, journals, categories and feeds are personal settings in `profile/digest/<kind>.json`, seeded disabled and empty from `templates/digest/`; no field, journal list or feed ships as a default. The layout checker validates both. Collection uses only official APIs (NCBI E-utilities, the bioRxiv API, Europe PMC, Unpaywall when `UNPAYWALL_EMAIL` is set) and the user's feeds; `NCBI_API_KEY`, `NCBI_EMAIL` and proxies belong to the execution environment. Schedules (for example twice a week) are runtime scheduler entries that run workflows/digest/SKILL.md; there is no LifeOS clock. Raw collections stay in scratch space; reports, queue, history and run records are personal data under `reports/digest/` and `records/digest/`.
+
+## Working notes and local adjustments
+
+A vault in daily use collects corrections ("default to cooked", "answer first, then explain") and procedure tweaks. They have their own places so that system files stay identical to the shared release and upgrades keep arriving:
+
+- **Working notes** (`project.json` working_notes, normally `profile/working.md`, 2000 bytes). One line per standing preference or correction, optionally scoped to a domain. `tools/context.mjs` prints them at every start, so even a quick path follows them. Change them only through `node tools/working.mjs`: it refuses duplicates, over-long notes, notes in a scope the user withholds entirely, and any write past the budget, so notes are merged rather than silently dropped. Writes are hash-checked with before/after snapshots. Notes say how to serve the user; facts and their evidence still go to records and memory entries (docs/core/MEMORY.md), and nothing the user declined goes into a note.
+- **Local adjustments** (`local/`). `local/<path>` adds to the shared file `<path>` for this vault only and wins where they differ, except over the `AGENTS.md` safety floor. Startup lists the adjusted paths. Keep them short additions, not copies. Deployment treats `local/` as personal data: it seeds `local/README.md` once and never changes or removes anything there.
+- **Proposals** (`evolve/pending/`, template `templates/proposal.md`). A change that would help every user is written here with its problem, evidence and proposed edits, then reviewed during development (the weekly review collects them). In a vault session, system files are not edited; the adjustment goes to `local/` and the proposal here.
+- **Scratch space** (`project.json` scratch, normally `.lifeos/tmp/`, 7 days). Throwaway inputs, outputs and one-off scripts go here, never into the vault root. Startup counts stray root files and expired scratch files; `node tools/tidy.mjs --apply` moves stray root files into scratch (their age restarts) and deletes expired scratch files. Sync-conflict copies are left to `tools/conflicts.mjs`.
+
+The layout checker validates these declarations. They are file conventions, not access controls.
 
 ## Project-root layout policy
 

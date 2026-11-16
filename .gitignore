@@ -5,6 +5,9 @@
 /evolve/research/
 /evolve/sources/
 /evolve/drafts/
+/evolve/pending/
+# Vault-local adjustments are personal
+/local/
 # Local runtime state
 .lifeos/
 .lifeos-deploy.json

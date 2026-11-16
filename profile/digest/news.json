@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "kind": "news",
+  "enabled": false,
+  "label": null,
+  "interests": [],
+  "core_tokens": [],
+  "strict_journals": [],
+  "exclude_title_prefixes": [],
+  "sources": {
+    "rss": {
+      "feeds": []
+    }
+  },
+  "report": {
+    "cap": 6,
+    "translate": true,
+    "full_text": false,
+    "original_label": null,
+    "translation_label": null
+  }
+}

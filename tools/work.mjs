@@ -1,7 +1,7 @@
 // CLI facade: request control, immutable consultation archives, and action histories.
 import fs from 'node:fs';
 import { digest, stable, keyId, vaultPath, readJSON, inputJSON, immutable, walk, sourceRefs, dateOrNull } from './store.mjs';
-import { locate, request, events, appendEvent, start, status, step, control, replan, capture, waive, terminalStates } from './work-state.mjs';
+import { locate, request, events, appendEvent, start, status, step, control, replan, capture, waive, terminalStates, actionStatus } from './work-state.mjs';
 import { checkReview, reviewArchiveText } from './review-data.mjs';
 
 function message(input) {
@@ -91,14 +91,6 @@ function createAction(input) {
   immutable(file, { schema_version: 1, id, input_hash: inputHash, request_id: task.id, text: input.text,
     owner: input.owner ?? 'user', due: dateOrNull(input.due), recorded_at: new Date().toISOString(), sources: sourceRefs(input.sources) });
   return actionStatus(id);
-}
-
-function actionStatus(id) {
-  const located = locate(id, 'actions', 'definition.json'), history = events(located.directory);
-  let due = located.record.due;
-  for (const event of history) if (Object.hasOwn(event, 'due')) due = event.due;
-  return { ...located.record, file: located.file, status: history.at(-1)?.status ?? 'proposed',
-    due, history };
 }
 
 function updateAction(input) {

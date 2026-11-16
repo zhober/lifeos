@@ -48,6 +48,8 @@ export async function afterSleepInput(event) {
   health.status = 'recorded';
   for (const observation of analysis.observations) health.items.push({ text: (input.language.startsWith('zh') ? '昨夜睡眠分析（醒来日 ' : 'Morning sleep analysis (waking date ') + event.wake_date + '): ' + observation.text,
     evidence: observation.kind === 'hypothesis' ? 'inferred' : 'reported', source_ids: ids, fields: ['sleep_analysis', 'dates'] });
+  // Device detail from the sleep input (stages, efficiency, score) so the views can draw last night's sleep, not the day before.
+  if (textValue(data.notes)) health.items.push({ text: String(data.notes), evidence: 'reported', source_ids: ids, fields: ['sleep_analysis', 'dates'] });
   const trend = input.trends.find(item => item.metric_id === 'sleep_h');
   if (trend) { trend.points.push({ date: event.wake_date, value: data.sleep_h ?? null }); trend.points = trend.points.slice(-7); trend.source_ids = [...new Set([...trend.source_ids, ...ids])]; }
   return { ready: true, report_date: reportDate, wake_date: event.wake_date, input };

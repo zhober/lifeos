@@ -13,9 +13,11 @@ LifeOS is a personal assistant made of plain files. Your daily records, profile,
 - **A coach, not just a logger.** After saving, the assistant gives 1-3 specific suggestions (what the next meal could add, a tweak for tomorrow, recovery after training) and asks with numbered options when something unclear would change the result.
 - **Expert roles.** Nutritionist, health advisor, fitness coach, study coach (planning, resources, AI teaching), career coach, psych coach (emotions and interpersonal situations), shopping advisor, finance advisor and travel planner. A critic reviews important plans; a panel brings several experts to one problem. The evolver role adds or changes experts.
 - **Long-term memory.** Dated, sourced facts and events across years. Requests can be paused, resumed, cancelled or re-planned.
+- **Learns how you like things.** A correction such as "assume food is cooked" becomes a short working note that every session reads, in `profile/working.md`. Your own tweaks to a procedure live in `local/` and survive upgrades; changes worth sharing are written up as proposals in `evolve/pending/`.
+- **Digests.** A literature digest (all papers of your journals plus preprints, screened against your research interests, scored, and reported with the full original abstract, a complete translation and an assessment) or a news digest from your feeds. The pipeline is shared, so further kinds plug in.
 - **Daily report.** A data-and-actions summary of a day as JSON, Markdown and HTML, with an optional PDF.
 - **Privacy first.** Every personal detail is voluntary, and a declined topic stays declined for every model that opens the vault.
-- **Advice only for money and bookings.** Shopping, travel and finance are research and advice; LifeOS never logs in, buys, books, pays or submits forms.
+- **Advice only for money and bookings.** Shopping, travel and finance are research and advice; LifeOS never buys, books, pays or submits forms. For shopping research you may log in yourself in the browser and LifeOS will only read: no cart, checkout, orders, payment or coupon claiming, and credentials are never requested or stored.
 
 ## Requirements
 

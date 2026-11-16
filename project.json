@@ -88,7 +88,8 @@
     "psych": "docs/domains/PSYCH.md",
     "finance": "docs/domains/FINANCE.md",
     "travel": "docs/domains/TRAVEL.md",
-    "reporting": "docs/domains/REPORTING.md"
+    "reporting": "docs/domains/REPORTING.md",
+    "digest": "docs/domains/DIGEST.md"
   },
   "definitions": {
     "agents_directory": "agents",
@@ -99,6 +100,33 @@
     "role_aliases": {
       "ai-tutor": "study-coach"
     }
+  },
+  "digest": {
+    "settings_directory": "profile/digest",
+    "records_directory": "records/digest",
+    "reports_directory": "reports/digest",
+    "kinds": {
+      "literature": { "collector": "literature", "label": "Literature digest" },
+      "news": { "collector": "rss", "label": "News digest" }
+    },
+    "queue": { "min_score": 3, "expire_days": 14, "max_entries": 50 },
+    "report_cap": 6,
+    "short_abstract_chars": 500,
+    "lookback_days": 4,
+    "max_window_days": 14
+  },
+  "working_notes": {
+    "file": "profile/working.md",
+    "max_bytes": 2000
+  },
+  "adjustments": {
+    "local_directory": "local",
+    "proposals_directory": "evolve/pending",
+    "proposal_template": "templates/proposal.md"
+  },
+  "scratch": {
+    "directory": ".lifeos/tmp",
+    "max_age_days": 7
   },
   "configuration": {
     "runtimes_directory": "config/runtimes",

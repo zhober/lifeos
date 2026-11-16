@@ -9,7 +9,8 @@ Before retrieval or using an existing value, apply config/CONFIGURATION.md's Vol
 1. Original evidence: journals, profile history, domain records, inbox originals, request messages, and complete expert artifacts.
 2. Immutable memories: `memory/entries/YYYY/<id>.json`, one sourced fact, episode, constraint, preference, method, insight, or hypothesis per entry.
 3. Working context: a retrieved view from `node tools/memory.mjs context`, plus the compact profile and relevant source excerpts. This view is reconstructible and is not the only copy of a fact.
-4. Personal patterns: `memory/insights.md` and qualified insight entries. The fourteen-day rule applies to pattern evidence, not to storing single events.
+4. Working notes: `profile/working.md`, a short list of standing preferences and corrections printed at every start (see config/CONFIGURATION.md). It is a bounded view for behaviour, not a store of facts; keep the fact itself, with its source, in the original evidence and memory entries.
+5. Personal patterns: `memory/insights.md` and qualified insight entries. The fourteen-day rule applies to pattern evidence, not to storing single events.
 
 Do not delete old entries automatically, remove resolved symptoms from history, or overwrite facts when circumstances change. Create a new entry with `supersedes` for a correction or update; use `related_to` for a documented relationship or explicitly labeled hypothesis. These links do not themselves establish causation.
 

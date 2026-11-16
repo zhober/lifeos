@@ -9,6 +9,7 @@ node tools/quick-log.mjs <input.json | -> [--dry-run] [--no-sleep-report]
 
 `-` reads JSON from stdin. It archives the verbatim statement, keeps photo originals, writes records,
 updates the journal, sums the day and prints one receipt. `--dry-run` previews without writing.
+Prefer stdin; if a file is needed, write it under `.lifeos/tmp/`, never in the vault root.
 
 ## Dating
 
@@ -48,7 +49,14 @@ Correction of a saved meal (id from the earlier receipt; give the full new `comp
 ## Fields
 
 Top level: `statement` (verbatim, required), `captured_at`, `date`, `meals[]`, `exercise[]`, `symptoms[]`,
-`sleep`, `attachments[]`, `weight_kg`, `mood`, `energy`, `stress` (1-5), `study {time, content, min, output}`, `work {h}`.
+`sleep`, `attachments[]`, `weight_kg`, `water_ml` (the user's stated day total; never inferred from cups),
+`mood`, `energy`, `stress` (1-5), `study {time, content, min, output}`, `work {h}`.
+
+After saving meals, `node tools/nutrition-gaps.mjs [DATE]` reports the day's remaining protein/carb/fat, fiber, vitamin C and potassium gaps, and suggests one food with gram amount for each real gap (using only foods that carry that number in the composition table; a partial nutrient total is used only as a labelled lower bound). It never treats missing data as zero and never invents an intake.
+
+Photos sent together (one message or a quick burst) show one meal unless the user says otherwise or the photos clearly differ in time or place; record them as one meal's `photos`.
+
+Default to cooked: unless the user says otherwise, everything is already cooked and ready to eat, so use cooked/representative-value entries and never a dry-product entry for a prepared dish. Portion method: anchor each item to a countable reference (one egg, one bun, one bowl of rice, chopstick length, plate diameter), give low/estimate/high and use the middle; user-stated counts and grams override the photo. Choose cooked/edible-weight entries for cooked foods and say which basis you used; avoid dry-product entries for rehydrated foods (dried tofu skin, dried mushrooms, dried noodles) and use serving-weight references (a bowl of rice, one egg, one bun) rather than a bare percentage of the plate.
 
 | Field | Values (default) |
 |---|---|
@@ -74,6 +82,8 @@ ingredients or give `grams: null`. Estimates need `assumptions`. Unknown is neve
    protein or recovery after training. Practical, not a lecture.
 3. If an unclear item changes the estimate a lot, ask now with 2-4 numbered options; otherwise save
    with a labelled assumption and offer the options in one line.
+4. Receipt has a `report`: send its PDF, else the HTML plus the no-PDF reason; never skip it. If that
+   date changed since, regenerate via `workflows/report/SKILL.md` first.
 
 ## Leave the quick path
 

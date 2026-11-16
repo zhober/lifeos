@@ -1,21 +1,25 @@
 // Optional PDFKit runtime. All decoration is local vector drawing; CJK text is embedded.
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { ROOT } from './lib.mjs';
 import { digest } from './store.mjs';
 import { ensure } from './record-data.mjs';
-import { labels, displayValue, plainNote, domainName, actionLabel, domainPalette, actionPalette, recordBlocks, reportPresentationRecipe, reportForDisplay, reportCoverCards } from './report-format.mjs';
+import { labels, displayValue, plainNote, domainName, actionLabel, domainPalette, actionPalette, recordBlocks, reportPresentationRecipe, reportForDisplay, reportCoverCards, chartModel, cardColumns, CHART_COLORS, trainingName, trainingMeta, trainingSummary } from './report-format.mjs';
 
 export function pdfRuntime(options = {}) {
-  const localRuntime = path.resolve(ROOT, '..', 'runtime', 'lifeos-pdf');
-  const root = options.runtime ?? process.env.LIFEOS_PDF_RUNTIME ?? (fs.existsSync(path.join(localRuntime, 'package.json')) ? localRuntime : null);
+  // Order: --runtime > LIFEOS_PDF_RUNTIME > ~/lifeos-runtime/pdf (per-machine, outside synced folders) > <workspace>/runtime/lifeos-pdf.
+  // The automatic after-sleep report passes no options, so it relies on the two default locations.
+  const defaults = [path.join(os.homedir(), 'lifeos-runtime', 'pdf'), path.resolve(ROOT, '..', 'runtime', 'lifeos-pdf')];
+  const root = options.runtime ?? process.env.LIFEOS_PDF_RUNTIME ?? defaults.find(dir => fs.existsSync(path.join(dir, 'node_modules/pdfkit/package.json'))) ?? null;
   ensure(root && path.isAbsolute(root), 'PDF output needs an external runtime directory; run tools/report-setup.mjs first.');
   const require = createRequire(path.join(root, 'package.json'));
   const PDFDocument = require('pdfkit'), version = JSON.parse(fs.readFileSync(path.join(root, 'node_modules/pdfkit/package.json'), 'utf8')).version;
   const fonts = options.font ? [{ path: options.font, family: options.font_family ?? undefined }] : [
     { path: 'C:/Windows/Fonts/msyh.ttc', family: 'MicrosoftYaHei' }, { path: 'C:/Windows/Fonts/simhei.ttf' },
     { path: '/System/Library/Fonts/PingFang.ttc', family: 'PingFangSC-Regular' },
+    { path: '/System/Library/Fonts/Supplemental/Arial Unicode.ttf' }, { path: '/Library/Fonts/Arial Unicode.ttf' },
     { path: '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc', family: 'NotoSansCJKsc-Regular' },
     { path: path.join(root, 'fonts/NotoSansCJKsc-Regular.otf') }
   ];
@@ -103,9 +107,9 @@ export async function renderReportPDF(report, runtime) {
   };
   const metricCard = (metric, x, yy, w, h, cover = false) => {
     const p = domainPalette(metric.domain), titleLines = lines(metric.label, w - 48, cover ? 10 : 8.5);
-    doc.roundedRect(x, yy, w, h, cover ? 12 : 8).fill(p.pale); icon(p.icon, x + w - 32, yy + 11, cover ? 23 : 17, p.accent);
+    doc.roundedRect(x, yy, w, h, cover ? 12 : 8).fill(p.pale); icon(p.icon, x + w - (cover && w < 200 ? 24 : 32), yy + 11, cover ? (w > 200 ? 23 : 15) : 17, p.accent);
     titleLines.forEach((line, index) => put(line, x + 12, yy + 10 + index * 12, cover ? 10 : 8.5, p.accent));
-    let size = metric.type === 'note' ? 17 : metric.value == null ? 9.5 : cover ? 27 : 19;
+    let size = metric.type === 'note' ? 17 : metric.value == null ? 9.5 : cover ? (w > 200 ? 27 : 19) : 19;
     const value = metric.type === 'note' ? l.recorded : displayValue(metric, l), valueWidth = w - 24;
     doc.font('Body').fontSize(size); while (doc.widthOfString(safeText(value)) > valueWidth && size > 7) doc.fontSize(size -= .5);
     put(value, x + 12, yy + (cover ? 14 : 11) + titleLines.length * 12, size, metric.value == null ? muted : ink);
@@ -118,69 +122,174 @@ export async function renderReportPDF(report, runtime) {
   };
 
   background();
-  doc.roundedRect(left, 36, width, 151, 17).fill('#F5E7D5');
-  put('LifeOS  /  DAILY NOTES', left + 19, 53, 9, '#8B633B');
-  put(l.snapshot, left + 19, 78, 25, ink);
-  put(report.date, left + 19, 113, 22, '#8B633B');
-  put(l.snapshotNote, left + 19, 153, 10, '#7D6B55');
+  doc.roundedRect(left, 36, width, 96, 14).fill('#F5E7D5');
+  put('LifeOS  /  DAILY NOTES', left + 18, 50, 8.5, '#8B633B');
+  put(l.snapshot, left + 18, 68, 22, ink);
+  put(report.date, left + 18, 100, 15, '#8B633B');
   // Decoration carries no score, mood or health judgment.
-  doc.save().strokeColor('#B8905D').lineWidth(1.2);
-  const sunX = left + width - 67, sunY = 108;
-  doc.circle(sunX, sunY, 21).fill('#E6BC75');
-  for (const angle of [-150, -110, -70, -30, 10]) {
-    const a = angle * Math.PI / 180; doc.moveTo(sunX + Math.cos(a) * 29, sunY + Math.sin(a) * 29).lineTo(sunX + Math.cos(a) * 35, sunY + Math.sin(a) * 35).stroke();
-  }
-  doc.moveTo(sunX - 38, sunY + 15).lineTo(sunX + 38, sunY + 15).stroke();
-  doc.moveTo(sunX - 26, sunY + 23).lineTo(sunX + 26, sunY + 23).stroke(); doc.restore();
-  y = 202;
+  doc.save().strokeColor('#B8905D').lineWidth(1);
+  const sunX = left + width - 52, sunY = 82;
+  doc.circle(sunX, sunY, 15).fill('#E6BC75');
+  doc.moveTo(sunX - 28, sunY + 11).lineTo(sunX + 28, sunY + 11).stroke();
+  doc.moveTo(sunX - 19, sunY + 17).lineTo(sunX + 19, sunY + 17).stroke(); doc.restore();
+  y = 148;
   if (report.basis === 'fictional') {
     doc.roundedRect(left, y, width, 24, 7).fill('#FAEDD1'); put(l.fictional, left + 12, y + 6, 8.5, '#906326'); y += 33;
   }
-  paragraph(l.title, 10, '#477761', 0, 3);
-  if (report.sleep_context) paragraph(l.sleepDate + report.sleep_context.wake_date, 8.5, muted, 0, 3);
-  paragraph(l.scope, 8.3, muted, 0, 7);
-  paragraph(l.visibilityNote, 8.1, muted, 0, 5);
+  paragraph(l.title, 9.5, '#477761', 0, 6);
   const coverMetrics = reportCoverCards(report, runtime.identity);
-  for (let index = 0; index < coverMetrics.length; index += 2) {
-    const row = coverMetrics.slice(index, index + 2), coverWidth = (width - 12 * (row.length - 1)) / row.length, height = row.some(item => item.type === 'note') ? 110 : 96;
-    ensureRoom(height + 2); row.forEach((metric, col) => metricCard(metric, left + col * (coverWidth + 12), y, coverWidth, height, true)); y += height + 12;
+  if (coverMetrics.length) {
+    const coverWidth = (width - 10 * (coverMetrics.length - 1)) / coverMetrics.length, height = coverMetrics.some(item => item.type === 'note') ? 96 : 66;
+    ensureRoom(height + 2); coverMetrics.forEach((metric, col) => metricCard(metric, left + col * (coverWidth + 10), y, coverWidth, height, true)); y += height + 12;
   }
   if (!report.metrics.length && !report.sections.length && !report.actions.length && !report.followups.length && !report.summary.length && !report.trends.length) paragraph(l.emptyReport, 10, muted);
-  if (report.actions.length) heading(l.actionPreview, '01');
-  for (const [index, action] of report.actions.slice(0, 3).entries()) {
-    const p = actionPalette(action); ensureRoom(57); doc.roundedRect(left, y, width, 51, 9).fill('#FFFFFF');
-    doc.circle(left + 19, y + 18, 9).fill(p.pale); put(index + 1, left + 16, y + 12, 8.5, p.accent);
-    const preview = lines(action.text, width - 57, 9.5);
-    put(preview.length > 1 ? preview[0] + ' …' : preview[0], left + 36, y + 8, 9.5);
-    put(actionLabel(action, l), left + 36, y + 29, 8, p.accent); y += 57;
+
+  // ---- helpers for the chart row (same numbers as the HTML view, from chartModel)
+  const col = CHART_COLORS;
+  const textWidth = (text, size) => { doc.font('Body').fontSize(size); return doc.widthOfString(safeText(text)); };
+  const clip = (text, size, maxWidth) => { let out = String(text); if (textWidth(out, size) <= maxWidth) return out; while (out.length > 1 && textWidth(out + '…', size) > maxWidth) out = out.slice(0, -1); return out + '…'; };
+  const right = (text, xRight, yy, size, color) => put(text, xRight - textWidth(text, size), yy, size, color);
+  const sequence = (parts, x, yy) => { const biggest = Math.max(...parts.map(part => part[1])); let cursor = x; for (const [text, size, color] of parts) { put(text, cursor, yy + (biggest - size) * 0.8, size, color); cursor += textWidth(text, size) + 1; } };
+  const dotLegend = (items, x, yy, maxWidth, size = 7) => {
+    let lx = x, ly = yy;
+    for (const item of items) {
+      const w = textWidth(item.text, size) + 16;
+      if (lx > x && lx + w > x + maxWidth) { lx = x; ly += 11; }
+      doc.circle(lx + 2.5, ly + 4, 2.3).fill(item.color); put(item.text, lx + 8, ly, size, muted); lx += w;
+    }
+  };
+  const model = chartModel(report), chartCards = [];
+  if (model.meals.length) chartCards.push({ title: '每餐热量',
+    footer: (fx, fy) => sequence([['全天', 8, muted], [String(Math.round(model.dayKcal)), 9, ink], ['kcal', 8, muted]], fx, fy + 6),
+    body: (bx, by, bw, bh) => {
+      const meals = model.meals, rowH = Math.min(26, bh / meals.length), top = by + (bh - rowH * meals.length) / 2, max = Math.max(...meals.map(m => m.kcal));
+      meals.forEach((m, i) => {
+        const yy = top + i * rowH, barH = Math.min(16, rowH - 7), barW = Math.max(4, (bw - 30 - 30) * m.kcal / max);
+        put(m.meal, bx, yy + (rowH - 8) / 2 - 1, 7.5, muted);
+        doc.roundedRect(bx + 30, yy + (rowH - barH) / 2, barW, barH, 4).fill(col.kcal);
+        put(String(Math.round(m.kcal)), bx + 30 + barW + 5, yy + (rowH - 8) / 2 - 1, 8, ink);
+      });
+    } });
+  if (model.macro) chartCards.push({ title: '热量来源',
+    footer: (fx, fy, fw) => dotLegend(model.macro.order.map(key => ({ color: col[key], text: ({ protein: '蛋白质', carb: '碳水', fat: '脂肪' })[key] + ' ' + Math.round(model.macro.g[key]) + 'g ' + Math.round(model.macro.energy[key] / model.macro.sum * 100) + '%' })), fx, fy, fw),
+    body: (bx, by, bw) => {
+      const { energy, sum, order } = model.macro, cx = bx + bw / 2, cy = by + 40, r = 29; let angle = -Math.PI / 2;
+      doc.save().lineWidth(10).lineCap('butt');
+      doc.circle(cx, cy, r).strokeColor('#ECE6DA').stroke();
+      for (const key of order) {
+        const sweep = energy[key] / sum * Math.PI * 2; if (sweep <= 0) continue;
+        if (sweep >= Math.PI * 2 - 1e-6) { doc.circle(cx, cy, r).strokeColor(col[key]).stroke(); continue; }
+        const a1 = angle + sweep;
+        doc.path('M ' + (cx + r * Math.cos(angle)) + ' ' + (cy + r * Math.sin(angle)) + ' A ' + r + ' ' + r + ' 0 ' + (sweep > Math.PI ? 1 : 0) + ' 1 ' + (cx + r * Math.cos(a1)) + ' ' + (cy + r * Math.sin(a1))).strokeColor(col[key]).stroke(); angle = a1;
+      }
+      doc.restore();
+      const total = String(Math.round(model.dayKcal)); put(total, cx - textWidth(total, 15) / 2, cy - 9, 15, ink); put('kcal', cx - textWidth('kcal', 6.5) / 2, cy + 8, 6.5, muted);
+    } });
+  if (model.training) chartCards.push({ title: '训练', footer: (fx, fy) => put(trainingSummary(model.training), fx, fy + 6, 8, muted),
+    body: (bx, by, bw, bh) => {
+      const rows = model.training.flatMap(session => session.activities).slice(0, 8), rowH = Math.min(25, bh / rows.length), two = rowH >= 20, top = by + (bh - rowH * rows.length) / 2;
+      rows.forEach((activity, i) => {
+        const yy = top + i * rowH, meta = trainingMeta(activity), nameWidth = two ? bw - 46 : bw * 0.5;
+        put(clip(trainingName(activity.name), 8.3, nameWidth), bx, yy + (two ? 1 : (rowH - 8) / 2), 8.3, ink);
+        const dots = Math.min(activity.sets ?? 0, 6);
+        for (let k = 0; k < dots; k++) doc.circle(bx + bw - 3 - (dots - 1 - k) * 5.5, yy + 5, 1.8).fill('#287B65');
+        if (two) put(clip(meta, 7, bw), bx, yy + 12.5, 7, muted); else right(clip(meta, 7, bw * 0.45), bx + bw, yy + (rowH - 7) / 2, 7, muted);
+      });
+    } });
+  if (model.sleep) chartCards.push({ title: '睡眠结构',
+    footer: (fx, fy, fw) => { const sd = model.sleep, chips = [sd.efficiency != null ? '效率 ' + sd.efficiency + '%' : null, sd.score != null ? '评分 ' + sd.score : null, sd.heart_rate != null ? '心率 ' + sd.heart_rate : null, sd.awakenings != null ? '清醒 ' + sd.awakenings + ' 次' : null].filter(Boolean);
+      lines(chips.join('  ·  '), fw, 7.2).slice(0, 2).forEach((line, i) => put(line, fx, fy + i * 10, 7.2, muted)); },
+    body: (bx, by, bw) => {
+      const sd = model.sleep;
+      sequence([[String(sd.hours), 22, '#4B3F8C'], ['时', 8, muted], [String(sd.minutes), 22, '#4B3F8C'], ['分', 8, muted]], bx, by);
+      put(sd.bed + ' → ' + sd.wake, bx, by + 30, 8.5, muted);
+      const parts = [['深睡', sd.deep, col.deep], ['浅睡', sd.light, col.light], ['快速眼动', sd.rem, col.rem]].filter(item => item[1]);
+      if (parts.length) {
+        doc.save().roundedRect(bx, by + 50, bw, 9, 4.5).clip(); let cursor = bx;
+        for (const [, stage, color] of parts) { const w = bw * stage.pct / 100; doc.rect(cursor, by + 50, w + .5, 9).fill(color); cursor += w; }
+        doc.restore();
+        const colW = bw / parts.length;
+        parts.forEach(([name, stage, color], i) => { doc.circle(bx + i * colW + 2.5, by + 70, 2.3).fill(color); put(name + ' ' + stage.pct + '%', bx + i * colW + 8, by + 66.5, 7, ink); put(stage.time, bx + i * colW + 8, by + 76, 6.5, muted); });
+      }
+    } });
+  if (model.week) chartCards.push({ title: '近几日睡眠',
+    footer: (fx, fy) => sequence([['平均', 8, muted], [(model.week.reduce((sum, point) => sum + point.value, 0) / model.week.length).toFixed(1), 9, ink], ['小时', 8, muted]], fx, fy + 6),
+    body: (bx, by, bw, bh) => {
+      const pts = model.week, max = Math.max(9, ...pts.map(point => point.value)), slot = bw / pts.length, barW = Math.min(18, slot * 0.6), chartH = bh - 24;
+      pts.forEach((point, i) => {
+        const h = Math.max(3, point.value / max * chartH), x = bx + i * slot + (slot - barW) / 2, top = by + 12 + chartH - h;
+        doc.roundedRect(x, top, barW, h, 3).fill(col.sleep);
+        const label = String(point.value); put(label, x + barW / 2 - textWidth(label, 7) / 2, top - 10, 7, ink);
+        const date = point.date.slice(5); put(date, x + barW / 2 - textWidth(date, 6.3) / 2, by + 12 + chartH + 5, 6.3, muted);
+      });
+    } });
+  if (chartCards.length) {
+    const cardHeight = 148, gap = 10, cols = cardColumns(chartCards.length), cardWidth = (width - gap * (cols - 1)) / cols;
+    for (let index = 0; index < chartCards.length; index += cols) {
+      ensureRoom(cardHeight + gap);
+      chartCards.slice(index, index + cols).forEach((item, k) => {
+        const x = left + k * (cardWidth + gap);
+        doc.roundedRect(x, y, cardWidth, cardHeight, 11).fill('#FFFFFF'); doc.roundedRect(x, y, cardWidth, cardHeight, 11).lineWidth(.6).strokeColor(border).stroke();
+        put(item.title, x + 12, y + 11, 9.5, '#477761');
+        item.body(x + 12, y + 32, cardWidth - 24, 90); item.footer(x + 12, y + cardHeight - 26, cardWidth - 24);
+      });
+      y += cardHeight + gap;
+    }
   }
-  if (report.actions.length) paragraph(l.allActions, 8, muted);
+
+  // ---- shortfalls and improvements
+  const advice = report.advice;
+  if (advice && (advice.flags.length || advice.ok.length)) {
+    heading('不足与改进');
+    const colWidth = (width - 10) / 2;
+    for (let index = 0; index < advice.flags.length; index += 2) {
+      const row = advice.flags.slice(index, index + 2), heights = row.map(item => 14 + lines(item.text, colWidth - 66, 8.6).length * 12.2), cardH = Math.max(...heights, 34);
+      ensureRoom(cardH + 8);
+      row.forEach((item, k) => {
+        const x = left + k * (colWidth + 10), low = item.tag === '偏低';
+        doc.roundedRect(x, y, colWidth, cardH, 9).fill('#FFFFFF'); doc.roundedRect(x, y, colWidth, cardH, 9).lineWidth(.6).strokeColor(border).stroke();
+        doc.roundedRect(x, y + 6, 3.5, cardH - 12, 1.7).fill(low ? '#C98A2B' : '#D06A5A');
+        doc.roundedRect(x + 13, y + 9, 32, 14, 5).fill(low ? '#FAEDD1' : '#FBE9E5'); put(item.tag, x + 18, y + 12, 8, low ? '#906326' : '#A3483A');
+        lines(item.text, colWidth - 66, 8.6).forEach((line, i) => put(line, x + 54, y + 9 + i * 12.2, 8.6, ink));
+      });
+      y += cardH + 8;
+    }
+    if (!advice.flags.length) paragraph('各项都在目标内。', 9, muted);
+    if (advice.ok.length) {
+      let px = left; ensureRoom(24); put('达标', px, y + 5, 8, muted); px += 30;
+      for (const item of advice.ok) {
+        const w = textWidth(item.text, 8) + 16; if (px + w > left + width) { px = left; y += 22; ensureRoom(24); }
+        doc.roundedRect(px, y, w, 18, 9).fill('#E4EDE3'); put(item.text, px + 8, y + 5, 8, '#2F6B52'); px += w + 6;
+      }
+      y += 26;
+    }
+  }
+  // remaining small metrics as a strip
+  const onCover = new Set(coverMetrics.filter(item => item.type === 'metric').map(item => item.id ?? item.label)), restMetrics = report.metrics.filter(item => !onCover.has(item.id ?? item.label));
+  if (restMetrics.length) {
+    let px = left; ensureRoom(28);
+    for (const metric of restMetrics) {
+      const value = displayValue(metric, l), w = textWidth(metric.label, 7.5) + textWidth(value, 10.5) + 28; if (px + w > left + width) { px = left; y += 28; ensureRoom(28); }
+      doc.roundedRect(px, y, w, 22, 8).fill('#FDF3DC'); put(metric.label, px + 10, y + 7, 7.5, '#8B633B'); put(value, px + 18 + textWidth(metric.label, 7.5), y + 5.5, 10.5, ink); px += w + 8;
+    }
+    y += 32;
+  }
 
   if (report.actions.length || report.followups.length || report.summary.length) {
     beginDetails(90 + report.actions.length * 105 + report.followups.length * 95 + report.summary.length * 95);
-    if (report.actions.length) heading(l.actionDetail, '02', l.actionScope);
+    if (report.actions.length) heading(l.actionDetail);
     for (const action of report.actions) card({ title: domainName(action.domain, l), text: action.text, palette: actionPalette(action), symbol: domainPalette(action.domain).icon,
       meta: actionLabel(action, l) + '\n' + l.due + ': ' + (action.due ?? l.unknown) + '  ·  ' + l.owner + ': ' + action.owner });
-    if (report.followups.length) heading(l.followups, '03', l.actionNote);
+    if (report.followups.length) heading(l.followups);
     for (const item of report.followups) card({ title: domainName(item.domain, l), text: item.text, palette: domainPalette(item.domain), symbol: 'chat', size: 9.5 });
-    if (report.summary.length) heading(l.summary, '03');
+    if (report.summary.length) heading(l.summary);
     for (const item of report.summary) card({ title: item.kind === 'hypothesis' ? l.inferred : l.recorded, text: item.text, palette: domainPalette(item.domain ?? 'health'), symbol: 'note', size: 9.5 });
   }
 
-  if (report.metrics.length || report.trends.length) beginDetails(70 + Math.ceil(report.metrics.length / 3) * 85 + Math.ceil(report.trends.length / 2) * 150);
-  if (report.metrics.length) heading(l.dataDetail, '04', l.detailNote);
-  const columns = 3, gutter = 7;
-  for (let index = 0; index < report.metrics.length; index += columns) {
-    const row = report.metrics.slice(index, index + columns);
-    const cellWidth = (width - gutter * (row.length - 1)) / row.length;
-    const height = Math.max(...row.map(metric => 48 + lines(metric.label, cellWidth - 48, 8.5).length * 12
-      + lines(plainNote(metric, l), cellWidth - 24, 7.1).length * 10));
-    ensureRoom(height + gutter); row.forEach((metric, col) => metricCard(metric, left + col * (cellWidth + gutter), y, cellWidth, height)); y += height + gutter;
-  }
-  if (report.metrics.some(metric => metric.domain === 'nutrition' && metric.coverage !== 'complete' && metric.value != null)) paragraph(l.foodNote, 8, '#9A6227', 0, 1);
-  if (report.sleep_context) paragraph(l.sleepDate + report.sleep_context.wake_date, 8, muted, 0, 1);
-  if (report.trends.length) {
-    heading(l.trends, '05');
+  // trends other than sleep (sleep has its own chart); the display projection already drops single-day trends
+  const lineTrends = report.trends.filter(trend => trend.metric_id !== 'sleep_h');
+  if (lineTrends.length) {
+    beginDetails(70 + Math.ceil(lineTrends.length / 2) * 150); heading(l.trends);
     const chart = (trend, x, yy, w, h) => {
       const p = domainPalette(trend.domain), chartX = x + 26, chartY = yy + 33, chartW = w - 39, chartH = 50;
       doc.roundedRect(x, yy, w, h, 9).fill('#FFFFFF'); put(trend.label + ' / ' + (l.units[trend.unit] ?? trend.unit), x + 12, yy + 10, 8.5, p.accent);
@@ -189,48 +298,46 @@ export async function renderReportPDF(report, runtime) {
       put(max, x + 6, chartY - 3, 6, muted); put(min, x + 6, chartY + chartH - 6, 6, muted);
       let previous = null;
       trend.points.forEach((point, index) => {
-        const xx = chartX + chartW * index / Math.max(1, trend.points.length - 1), yyPoint = point.value == null ? null : chartY + chartH - chartH * (point.value - min) / span;
-        const stride = Math.max(1, Math.ceil(trend.points.length / 7));
-        if (yyPoint != null) {
-          if (previous) doc.moveTo(previous.x, previous.y).lineTo(xx, yyPoint).lineWidth(1.6).strokeColor(p.accent).stroke();
-          doc.circle(xx, yyPoint, 2.6).fill(p.accent);
-          if (index % stride === 0 || index === trend.points.length - 1) put(point.value, xx - 8, yyPoint - 13, 6.2, ink);
-          previous = { x: xx, y: yyPoint };
-        } else { doc.circle(xx, chartY + chartH / 2, 2.4).lineWidth(.8).strokeColor(muted).stroke(); previous = null; }
-        // Dense charts space dates; complete points remain in JSON/Markdown.
-        if (index % stride === 0 || index === trend.points.length - 1) put(point.date.slice(5), xx - 9, chartY + chartH + 8, 6, muted);
+        const xx = chartX + chartW * index / Math.max(1, trend.points.length - 1), yyPoint = chartY + chartH - chartH * (point.value - min) / span, stride = Math.max(1, Math.ceil(trend.points.length / 7));
+        if (previous) doc.moveTo(previous.x, previous.y).lineTo(xx, yyPoint).lineWidth(1.6).strokeColor(p.accent).stroke();
+        doc.circle(xx, yyPoint, 2.6).fill(p.accent);
+        if (index % stride === 0 || index === trend.points.length - 1) { put(point.value, xx - 8, yyPoint - 13, 6.2, ink); put(point.date.slice(5), xx - 9, chartY + chartH + 8, 6, muted); }
+        previous = { x: xx, y: yyPoint };
       });
     };
-    for (let index = 0; index < report.trends.length; index += 2) {
-      const row = report.trends.slice(index, index + 2), w = (width - 12) / 2, height = 112;
-      ensureRoom(height + 9); row.forEach((trend, col) => chart(trend, left + col * (w + 12), y, w, height)); y += height + 9;
+    for (let index = 0; index < lineTrends.length; index += 2) {
+      const row = lineTrends.slice(index, index + 2), w = (width - 12) / 2, height = 112;
+      ensureRoom(height + 9); row.forEach((trend, c) => chart(trend, left + c * (w + 12), y, w, height)); y += height + 9;
     }
-    paragraph(l.trendNote, 7.5, muted);
   }
 
-  if (report.sections.length) { beginDetails(55 + report.sections.reduce((height, section) => height + 42 + section.items.reduce((total, item) => total + Math.ceil(item.text.length / 45) * 14 + 5, 0), 0)); heading(l.domainDetail, '06', l.recordsNote); }
-  for (const [index, section] of report.sections.entries()) {
-    const p = domainPalette(section.domain); ensureRoom(58);
-    icon(p.icon, left + 1, y + 1, 19, p.accent); put(String(index + 1).padStart(2, '0') + '  ' + domainName(section.domain, l), left + 31, y + 2, 11, p.accent);
-    const status = l[section.status] ?? section.status; doc.fontSize(8);
-    put(status, left + width - doc.widthOfString(safeText(status)), y + 4, 8, muted); y += 26;
-    if (!section.items.length) paragraph(status, 8.5, muted, 31, 3);
-    for (const item of section.items) {
-      const prefix = l.plain[item.evidence] ? l.plain[item.evidence] + ': ' : '';
-      for (const block of recordBlocks(item.text)) {
-        if (block.type === 'table') {
-          for (const row of block.rows) paragraph(row.map((cell, col) => block.headers[col] + ': ' + (cell || '—')).join(' · '), 8.5, ink, 31, 2);
-          if (prefix) paragraph(l.plain[item.evidence], 7.5, muted, 31, 3);
-        } else paragraph(prefix + block.text, 9, item.evidence === 'inferred' ? '#78639C' : ink, 31, 3);
+  // ---- detail tables and notes (the sleep card replaces the sleep table)
+  const pdfSections = report.sleep_detail ? report.sections.map(section => ({ ...section, items: section.items.filter(item => !item.sleep) })).filter(section => section.items.length) : report.sections;
+  const drawTable = (block, indent) => {
+    const cols = block.headers.length, cellWidth = (width - indent) / cols, rowH = 17;
+    const drawRow = (cells, header) => {
+      ensureRoom(rowH + 2);
+      if (header) doc.rect(left + indent, y, width - indent, rowH).fill('#F1F4EE');
+      cells.forEach((cell, c) => put(clip(cell || '—', 8.4, cellWidth - 10), left + indent + c * cellWidth + 6, y + 4.5, 8.4, header ? muted : ink));
+      doc.moveTo(left + indent, y + rowH).lineTo(left + width, y + rowH).lineWidth(.4).strokeColor(border).stroke(); y += rowH;
+    };
+    drawRow(block.headers, true); block.rows.forEach(row => drawRow(row, false)); y += 4;
+  };
+  if (pdfSections.length) {
+    const itemHeight = item => recordBlocks(item.text).reduce((sum, block) => sum + (block.type === 'table' ? 17 * (block.rows.length + 1) + 8 : Math.ceil(block.text.length / 45) * 14 + 5), 0);
+    beginDetails(40 + pdfSections.reduce((height, section) => height + 34 + section.items.reduce((total, item) => total + itemHeight(item), 0), 0)); heading(l.domainDetail);
+    for (const section of pdfSections) {
+      const p = domainPalette(section.domain); ensureRoom(58);
+      icon(p.icon, left + 1, y + 1, 19, p.accent); put(domainName(section.domain, l), left + 31, y + 2, 11, p.accent); y += 26;
+      for (const item of section.items) {
+        for (const block of recordBlocks(item.text)) {
+          if (block.type === 'table') drawTable(block, 31);
+          else paragraph(block.text, 9, item.evidence === 'inferred' ? '#78639C' : ink, 31, 3);
+        }
       }
+      y += 8;
     }
-    doc.moveTo(left + 31, y + 3).lineTo(left + width, y + 3).lineWidth(.5).strokeColor(border).stroke(); y += 13;
   }
-
-  if (report.gaps.length) { beginDetails(70 + report.gaps.length * 28); heading(l.gaps, '08'); }
-  for (const gap of report.gaps) paragraph('• ' + (gap.domain ? domainName(gap.domain, l) + ': ' : '') + (l.gap[gap.code] ?? gap.code), 9, '#906326');
-  // Source paths and checksums stay in report.json/bundle metadata; the human view keeps one pointer line.
-  y += 6; paragraph(l.sourceFooter, 7.5, muted);
   const range = doc.bufferedPageRange();
   for (let page = 0; page < range.count; page++) {
     doc.switchToPage(range.start + page); doc.font('Body');

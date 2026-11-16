@@ -51,12 +51,35 @@ function itemPermitted(item, domain) {
 
 export function normalizeDailyReport(input) {
   ensure(object(input) && input.schema_version === 1 && input.kind === 'daily_report_input', 'Use a normalized daily report input.');
-  const allowed = ['schema_version', 'kind', 'date', 'timezone', 'language', 'basis', 'style', 'sources', 'metrics', 'sections', 'actions', 'followups', 'summary', 'trends', 'gaps', 'sleep_context'];
+  const allowed = ['schema_version', 'kind', 'date', 'timezone', 'language', 'basis', 'style', 'sources', 'metrics', 'sections', 'actions', 'followups', 'summary', 'trends', 'gaps', 'sleep_context', 'targets', 'training'];
   ensure(Object.keys(input).every(key => allowed.includes(key)), 'Unsupported report field; retain additional evidence in original records.');
   dateOrNull(input.date); ensure(input.date && text(input.timezone, 80) && text(input.language, 80), 'Report needs date, timezone and interaction language.');
   try { new Intl.DateTimeFormat('en-CA', { timeZone: input.timezone }); } catch { throw new Error('Invalid report timezone.'); }
   ensure(['personal', 'fictional'].includes(input.basis) && input.style === 'data_actions', 'Declare data/action style and personal versus fictional basis.');
   for (const key of ['sources', 'metrics', 'sections', 'actions', 'followups', 'summary', 'trends', 'gaps']) ensure(Array.isArray(input[key]), key + ' must be an array.');
+  // Optional personal daily targets (low/high per metric); display compares recorded totals with them and never infers more.
+  const TARGET_KEYS = ['energy_kcal', 'protein_g', 'fat_g', 'carb_g', 'fiber_g', 'sodium_mg', 'sleep_h'];
+  const boundOk = n => n == null || (typeof n === 'number' && Number.isFinite(n) && n >= 0);
+  let targets = null;
+  if (input.targets != null) {
+    ensure(object(input.targets) && Object.keys(input.targets).every(key => TARGET_KEYS.includes(key)), 'Targets use known metric keys.');
+    targets = Object.fromEntries(Object.entries(input.targets).map(([key, value]) => {
+      ensure(object(value) && boundOk(value.low) && boundOk(value.high) && (value.low != null || value.high != null) && (value.low == null || value.high == null || value.low <= value.high), 'Each target needs a bounded low and/or high.');
+      return [key, { low: value.low ?? null, high: value.high ?? null }];
+    }));
+  }
+  let training = null;
+  if (input.training != null) {
+    ensure(Array.isArray(input.training) && input.training.length <= 10, 'Training is a short list of sessions.');
+    training = input.training.map(session => {
+      ensure(object(session) && text(session.title, 200) && Array.isArray(session.activities) && session.activities.length <= 40, 'Each training session has a title and activities.');
+      return { title: session.title, activities: session.activities.map(activity => {
+        ensure(object(activity) && text(activity.name, 200) && (activity.sets == null || Number.isInteger(activity.sets) && activity.sets >= 0) && (activity.minutes == null || typeof activity.minutes === 'number' && activity.minutes >= 0)
+          && (activity.reps == null || text(activity.reps, 40)) && (activity.load == null || text(activity.load, 60)), 'Training activities use bounded text and counts.');
+        return { name: activity.name, sets: activity.sets ?? null, reps: activity.reps ?? null, load: activity.load ?? null, minutes: activity.minutes ?? null };
+      }) };
+    });
+  }
   const sources = new Map();
   for (const source of input.sources) {
     ensure(object(source) && identifier(source.id) && !sources.has(source.id) && text(source.path, 1200) && /^[a-f0-9]{64}$/.test(source.sha256), 'Source IDs, exact relative paths and SHA-256 are required.');
@@ -132,7 +155,7 @@ export function normalizeDailyReport(input) {
   });
   const uniqueGaps = [...new Map(gaps.map(gap => [stable(gap), gap])).values()];
   return { schema_version: 1, kind: 'daily_report', date: input.date, timezone: input.timezone, language: input.language, basis: input.basis, style: input.style,
-    metrics, sections, actions, followups, summary, trends, sleep_context: sleepContext, gaps: uniqueGaps, sources: [...used].map(id => sources.get(id)),
+    metrics, sections, actions, followups, summary, trends, sleep_context: sleepContext, targets, training, gaps: uniqueGaps, sources: [...used].map(id => sources.get(id)),
     counts: { metrics_with_values: metrics.filter(item => item.value != null).length, recorded_domains: sections.filter(section => section.status === 'recorded').length,
       action_states: Object.fromEntries(statuses.map(status => [status, actions.filter(item => item.status === status).length])) },
     policy: disclosurePolicy(REPORT_SCOPES), source_verification: 'used_source_bytes_checked_after_disclosure',

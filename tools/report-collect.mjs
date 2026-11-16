@@ -29,6 +29,14 @@ function section(body, heading) {
   let end = lines.findIndex((line, index) => index > begin && /^## /.test(line)); if (end < 0) end = lines.length;
   return lines.slice(begin + 1, end).filter(line => !/^\s*<!--/.test(line) && !/^\s*\|\s*[-:]/.test(line)).join('\n').trim();
 }
+// One line per activity for the report's training block: counts and reported loads only, nothing derived.
+const loadText = load => load && typeof load.value === 'number' ? load.value + ' ' + (load.unit ?? '') + (load.convention === 'per_implement' ? '/只' : '') : null;
+function trainingActivity(activity) {
+  const sets = Array.isArray(activity.sets) ? activity.sets : [];
+  const reps = [...new Set(sets.map(set => set.reps).filter(value => typeof value === 'number'))], loads = [...new Set(sets.map(set => loadText(set.external_load)).filter(Boolean))];
+  return { name: String(activity.name ?? '').slice(0, 200), sets: sets.length || null, reps: reps.length ? reps.join('/') : null, load: loads.length ? loads.join('/') : null,
+    minutes: typeof activity.duration_min === 'number' ? activity.duration_min : null };
+}
 export async function collectDailyReport(date = today(), options = {}) {
   dateOrNull(date); ensure(date, 'Supply a valid date.');
   const timezone = configuredTimezone();
@@ -41,6 +49,8 @@ export async function collectDailyReport(date = today(), options = {}) {
     input.gaps.push({ code: 'mixed_sources_require_scoped_context', domain: null });
     return input;
   }
+  const targetsFile = vaultPath('records/nutrition/targets.json');
+  if (fs.existsSync(targetsFile)) { const stored = readJSON('records/nutrition/targets.json'); if (stored && stored.daily && typeof stored.daily === 'object') input.targets = stored.daily; }
   const sourceIds = new Map();
   const addSource = relative => {
     relative = relative.replaceAll('\\', '/'); if (sourceIds.has(relative)) return sourceIds.get(relative);
@@ -93,6 +103,12 @@ export async function collectDailyReport(date = today(), options = {}) {
   const exerciseRefs = [...new Set([...(journalSource ? [journalSource] : []), ...fitness.session_paths.map(addSource)])];
   metric('exercise_min', 'fitness', '运动记录时长', 'Recorded exercise', 'min', fitness.total_duration_min, { evidence: fitness.quality === 'sourced_record' ? 'reported' : 'legacy_unverified', source_ids: fitness.total_duration_min == null ? [] : exerciseRefs });
   if (fitness.invalidated_links.length) input.gaps.push({ code: 'fitness_link_changed', domain: 'fitness' });
+  const training = [];
+  for (const sessionPath of fitness.session_paths) {
+    const record = readJSON(sessionPath);
+    if (record && Array.isArray(record.activities) && record.activities.length) training.push({ title: String(record.title ?? '').slice(0, 200) || '训练', activities: record.activities.map(trainingActivity) });
+  }
+  if (training.length) input.training = training;
   const cutoff = Math.min(endOfDay(date, timezone), Date.now());
   for (const definitionPath of walk('actions', '.json').filter(file => file.endsWith('/definition.json'))) {
     const definition = readJSON(definitionPath);

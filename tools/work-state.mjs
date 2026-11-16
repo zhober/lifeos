@@ -15,6 +15,15 @@ export function locate(id, namespace, filename) {
 }
 export const request = id => locate(id, 'tasks', 'request.json');
 
+// An action's current state: the definition plus its latest status and due date from the event history.
+export function actionStatus(id) {
+  const located = locate(id, 'actions', 'definition.json'), history = events(located.directory);
+  let due = located.record.due;
+  for (const event of history) if (Object.hasOwn(event, 'due')) due = event.due;
+  return { ...located.record, file: located.file, status: history.at(-1)?.status ?? 'proposed',
+    due, history };
+}
+
 export function events(directory) {
   return walk(directory + 'events', '.json').map(file => ({ ...readJSON(file), file }))
     .sort((a, b) => a.sequence - b.sequence || a.recorded_at.localeCompare(b.recorded_at) || a.id.localeCompare(b.id));

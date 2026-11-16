@@ -490,6 +490,9 @@ function run(input) {
   }
   const work = numeric(input.work?.h, 'work.h');
   if (work !== null && work >= 0) { metrics.work_h = work; receipt.records.work_h = work; }
+  // 饮水：用户报告的当天累计毫升数，只写 frontmatter 的 water_ml；不推算、不按杯数自动折算。
+  const water = numeric(input.water_ml, 'water_ml');
+  if (water !== null && water >= 0) { metrics.water_ml = water; receipt.records.water_ml = water; }
 
   // 睡眠：输入 + 脚本生成的描述性分析落在本次操作的任务目录，再调用既有 after-sleep 钩子。
   if (input.sleep) {

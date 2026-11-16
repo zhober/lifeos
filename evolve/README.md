@@ -10,6 +10,7 @@
 | `evolve/research/` | 调研报告（`YYYY-MM-DD-<topic>.md`） |
 | `evolve/sources/` | 下载的 prompt / skill 原文（只读参考，附来源 URL、日期、许可） |
 | `evolve/drafts/` | 新建 / 修改 agent 的草稿 |
+| `evolve/pending/` | 使用中提出的系统改动提案（`templates/proposal.md`），等待每周复盘和开发目录审核；只在个人库中产生 |
 
 ## 部署边界
 

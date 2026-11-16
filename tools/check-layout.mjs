@@ -7,6 +7,7 @@ import { readJSON, vaultPath, legacyLocks } from './store.mjs';
 import { privacyErrors } from './privacy.mjs';
 import { settingsErrors } from './settings.mjs';
 import { scanConflicts } from './conflicts.mjs';
+import { digestSettingsErrors } from './digest-data.mjs';
 
 // A sync/backup duplicate is an error when it shadows a system file, because the tool and
 // instruction set would be ambiguous. In personal data it is a warning: reading and
@@ -128,6 +129,34 @@ export function checkLayout() {
         }
       }
     }
+    // Message digests: shared kinds and rules here, personal interests and sources in profile/digest/<kind>.json.
+    const digest = project.digest;
+    if (digest?.settings_directory !== 'profile/digest' || digest?.records_directory !== 'records/digest' || digest?.reports_directory !== 'reports/digest')
+      errors.push('digest needs settings_directory profile/digest, records_directory records/digest and reports_directory reports/digest.');
+    else {
+      for (const [kind, definition] of Object.entries(digest.kinds ?? {})) {
+        if (!/^[a-z][a-z0-9-]*$/.test(kind) || !['literature', 'rss'].includes(definition?.collector)) { errors.push('digest.kinds.' + kind + ' needs a lowercase name and a literature or rss collector.'); continue; }
+        inspect('templates/digest/' + kind + '.json', 'file', 'digest template ' + kind);
+        const settings = readJSON(digest.settings_directory + '/' + kind + '.json');
+        if (settings) errors.push(...digestSettingsErrors(settings, kind));
+      }
+      const queue = digest.queue ?? {};
+      if (![queue.min_score, queue.expire_days, queue.max_entries, digest.report_cap, digest.short_abstract_chars, digest.lookback_days, digest.max_window_days].every(Number.isInteger)
+        || queue.min_score < 1 || queue.min_score > 5 || digest.report_cap < 1 || digest.lookback_days > digest.max_window_days)
+        errors.push('digest queue/report/window settings must be integers (min_score 1-5, lookback_days ≤ max_window_days).');
+    }
+    // Working notes, local adjustments and scratch space: user-owned locations outside the system files.
+    const working = project.working_notes;
+    if (typeof working?.file !== 'string' || !/^profile\/[A-Za-z0-9_.-]+\.md$/.test(working.file) || !Number.isInteger(working.max_bytes) || working.max_bytes < 500 || working.max_bytes > 8000)
+      errors.push('working_notes needs a profile/*.md file and an integer max_bytes from 500 to 8000.');
+    else inspect(working.file, 'file', 'working_notes.file', true);
+    const adjustments = project.adjustments;
+    if (adjustments?.local_directory !== 'local' || adjustments?.proposals_directory !== 'evolve/pending')
+      errors.push('adjustments.local_directory must be local and adjustments.proposals_directory must be evolve/pending.');
+    inspect(adjustments?.proposal_template, 'file', 'adjustments.proposal_template');
+    if (typeof project.scratch?.directory !== 'string' || !project.scratch.directory.startsWith('.lifeos/') || project.scratch.directory.includes('..')
+      || !Number.isInteger(project.scratch?.max_age_days) || project.scratch.max_age_days < 1 || project.scratch.max_age_days > 90)
+      errors.push('scratch.directory must be under .lifeos/ and scratch.max_age_days an integer from 1 to 90.');
     inspect(project.definitions?.expert_common_rules, 'file', 'definitions.expert_common_rules');
     inspect(project.interaction?.preferences_file, 'file', 'interaction.preferences_file');
     const preferences = readJSON(project.interaction.preferences_file);

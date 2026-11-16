@@ -12,6 +12,22 @@ For specific products, use targeted community queries on the user's configured e
 
 Save author/title/original link, publication/lookup dates when known, inspected scope/location, product applicability, actual usage duration/test method and conditions, sample limitations, promotion/sponsorship knowledge and conflicting findings. An owner report may be useful for comfort/noise/usability; a personal anecdote does not establish a failure rate or safety guarantee. No disclosure does not prove no sponsorship.
 
+### Experience posts versus promotion
+
+Classify every community source before using it, from its body and account, not its title:
+
+- **Official**: the brand or platform's own notice or page. Use for rules, thresholds and validity; the checkout page still decides the final price.
+- **Real experience**: specific and checkable details (actual amount paid, what was bought, size with the buyer's height/weight, use duration), mentions drawbacks or returns, no purchase links or "claim in my profile". Treat as an anecdote about one buyer.
+- **Opinion/seeding**: a person's picks with some detail but no proof of purchase, or an account posting many same-template guides with stacked hashtags. Prices and claims are leads to verify.
+- **Promotion**: brand/official or merchant accounts, "deal / saving / welfare" aggregator accounts, hype titles in the user's language ("must-buy", "buy without thinking", "top picks", "steal", "price crash"), coupon-claim links, only praise, stock photos, a sponsorship tag. Not evidence of price or quality.
+- **Lead**: a title or snippet not actually read.
+
+Absence of a sponsorship tag does not prove no sponsorship, and one real experience does not establish a trend. Deal-aggregator articles (for example SMZDM) often carry affiliate links; use them to find items, then confirm on the official page. Record the classification and the reason with each source in the report.
+
+### Coupons and basket arithmetic
+
+Take rules from the platform's own coupon notice: threshold, discount, validity window, whether one per order and whether stackable, excluded categories and refund treatment. Compute each scenario as `sum − discount` with the sums shown, keep per-item budget separate from the basket total, and mark coupons the user may hold as unknown until the user shows them. Reading a coupon page is allowed; clicking claim is not.
+
 A search snippet, inaccessible post or video title is a lead. Use actual readable text/images/subtitles or runtime-provided content; retained HTML/video URL is not inspected content. Video caption segments require location/timestamps. If a runtime cannot access a source, keep the gap and use an equivalent source in the same bounded scope, rather than inventing content or changing connection settings.
 
 ## Accounts and advisory-only operation

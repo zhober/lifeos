@@ -37,18 +37,18 @@ const REFERENCE = ['data/food/cn-fct6.json', 'data/food/gi.json'];
 const EVOLVE = ['evolve/README.md', 'evolve/changelog.md', 'evolve/lineage.md', 'evolve/candidates.md'];
 // 个人数据：仅在不存在时从模板创建（null = 写空数组）
 const SEED = { 'profile/me.md': 'templates/me.md', 'profile/goals.md': 'templates/goals.md',
-  'profile/preferences.json': 'templates/preferences.json',
+  'profile/preferences.json': 'templates/preferences.json', 'profile/working.md': 'templates/working.md', 'local/README.md': 'templates/local.md',
   'memory/insights.md': 'templates/insights.md', 'data/food/custom.json': null };
 // 领域记录、专家知识库：按模板目录镜像初始化
-const SEED_DIRS = { 'templates/records': 'records', 'templates/experts': 'experts', 'templates/reports': 'reports' };
+const SEED_DIRS = { 'templates/records': 'records', 'templates/experts': 'experts', 'templates/reports': 'reports', 'templates/digest': 'profile/digest' };
 const DIRS = ['journal', 'reviews/weekly', 'reviews/monthly', 'advice', 'inbox', 'memory', 'memory/entries', 'profile', 'records', 'tasks', 'actions', 'history',
-  'evolve/research', 'evolve/sources', 'evolve/drafts',
+  'evolve/research', 'evolve/sources', 'evolve/drafts', 'evolve/pending', 'local', '.lifeos/tmp',
   'records/nutrition/meals', 'records/nutrition/days', 'records/nutrition/totals', 'inbox/meal-photos',
   'records/health/entries', 'records/cases', 'inbox/health', 'inbox/fitness',
   'records/fitness/sessions', 'records/fitness/plans', 'records/fitness/plan-events', 'records/fitness/recovery', 'records/fitness/assessments',
-  'records/career/entries', 'inbox/career', 'records/shopping/entries', 'inbox/shopping', 'records/finance/entries', 'inbox/finance', 'inbox/travel', 'reports/daily'];
+  'records/career/entries', 'inbox/career', 'records/shopping/entries', 'inbox/shopping', 'records/finance/entries', 'inbox/finance', 'inbox/travel', 'reports/daily', 'records/digest', 'reports/digest'];
 // 个人数据与用户自行维护的目录：永远不删除其中的任何东西。
-const PERSONAL_ROOTS = ['journal', 'profile', 'records', 'inbox', 'advice', 'reviews', 'memory', 'tasks', 'actions', 'history', 'reports', 'experts', 'data', '.lifeos'];
+const PERSONAL_ROOTS = ['journal', 'profile', 'records', 'inbox', 'advice', 'reviews', 'memory', 'tasks', 'actions', 'history', 'reports', 'experts', 'data', '.lifeos', 'local'];
 const key = rel => rel.replaceAll('\\', '/');
 const under = (relative, roots) => { const parts = key(relative).split('/'); return roots.includes(parts[0]); };
 
