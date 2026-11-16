@@ -15,7 +15,7 @@ try {
     const input = await collectDailyReport(normDate(argument));
     if (option('out')) {
       const relative = option('out'); vaultPath(relative);
-      result = checkedWrite({ operation_id: 'report-input/' + digest(stable(input)), path: relative, expected_hash: null, content: JSON.stringify(input, null, 2) + '\n' });
+      result = checkedWrite({ operation_id: 'report-input/' + digest(stable({ path: relative, input })), path: relative, expected_hash: null, content: JSON.stringify(input, null, 2) + '\n' });
     } else result = input;
   } else if (command === 'generate') {
     const file = path.resolve(argument);
